@@ -7,10 +7,10 @@ with open("Daniel's python name and address locator\AZ\AZ for borrows.csv", 'r')
 #check if name is in grantor and if it is pop it!
 from fuzzywuzzy import fuzz
 lenders=[]
-threshold = 70
+threshold = 60
 def check_yo_shi():
     with open('AZ.csv',"w", newline='\n') as az:
-        fieldnames = ['fc_transaction_id','grantor', 'Lend']
+        fieldnames = ['fc_transaction_id','grantor', 'Lend', 'bad']
         write = csv.DictWriter(az, fieldnames=fieldnames)
         write.writeheader()
         for li in list_az:
@@ -24,7 +24,8 @@ def check_yo_shi():
                 if similarity >= threshold:
                     index = splitter.index(split)
                     new=splitter.pop(index)
-                    write.writerow({'fc_transaction_id': li['fc_transaction_id'], 'grantor': splitter[0] if len(splitter) > 0 and splitter[0] != '' else splitter, 'Lend': split})
+                    write.writerow({'fc_transaction_id': li['fc_transaction_id'], 'grantor': splitter[0] if len(splitter) > 0 and splitter[0] != '' else splitter,
+                    'Lend': split, 'bad': new})
 
 
 check_yo_shi()

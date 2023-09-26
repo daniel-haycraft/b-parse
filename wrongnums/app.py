@@ -3,7 +3,7 @@ import json
 import pprint
 import os
 import csv
-from ..Skip.hocus import username, password
+from hocus import username, password
 pp = pprint.PrettyPrinter(0)
 
 def check_names_to_full(names, full):
@@ -18,11 +18,10 @@ def go_to_first_last_name(iterable):
         return i['firstName'], i['lastName']
 
 url = "https://api.galaxysearchapi.com/PersonSearch"
-
 headers = {
     "accept": "application/json",
-    "content-type": username,
-    "galaxy-ap-name": password[0],
+    "content-type": "application/json",
+    "galaxy-ap-name": "capfund1",
     "galaxy-ap-password": "67ba081cb67e4dd9812d454998f02966",
     "galaxy-search-type": "Person"
 }
@@ -30,7 +29,6 @@ parry=[]
 
 no_pass=[]
 not_sure=[]
-
 
 def delta():
     with open('Wrong Number Correction.csv', 'w', newline='\n') as file:
@@ -66,7 +64,6 @@ def delta():
             the_sonj= res.text
 
             data = json.loads(the_sonj)
-
             try:
                 divi_data = data['persons']
                 # Process divi_data here
@@ -98,7 +95,7 @@ def delta():
             "Phone 2": new_phone[1] if len(new_phone)> 1 else '',
             "Prem Email":new_email[0]if new_email else '',
             "Market Sizing Email 2": new_email[1] if len(new_email)> 1 else '',
-            "Replaced Phone Number": li['PhoneNumber']
+            "Replaced Phone Number": li['Phone Number']
             })
             
             print(row, ' out of ',len(list_dict), ' fetched and processed ')
@@ -106,7 +103,7 @@ def delta():
 
 if __name__ == "__main__":
     list_dict = []
-    with open("Phone Correction/Wrong_Numbers.csv", "r") as file:
+    with open("wrongs.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
     delta()

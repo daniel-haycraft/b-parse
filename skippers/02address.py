@@ -20,7 +20,7 @@ headers = {
     "accept": "application/json",
     "content-type": "application/json",
     "galaxy-ap-name": username,
-    "galaxy-ap-password": password,
+    "galaxy-ap-password": password[0],
     "galaxy-search-type": "PropertyV2"
 }
 person_url = "https://api.galaxysearchapi.com/PersonSearch"
@@ -28,7 +28,7 @@ person_headers = {
     "accept": "application/json",
     "content-type": "application/json",
     "galaxy-ap-name": username,
-    "galaxy-ap-password": password,
+    "galaxy-ap-password": password[0],
     "galaxy-search-type": "Person"
 }
 parry=[]
@@ -39,7 +39,6 @@ def delta():
     with open('address_mortis.csv', 'w', newline='\n') as file:
         fieldnames = ['ï»¿fc_transaction_id','Last Name','First Name','Address', 'State', 'City', 'Zip','Phone number','Phone 2','Prem Email',
         'Email0']
-
         wright = csv.DictWriter(file, fieldnames=fieldnames)
         wright.writeheader() 
         row=1
@@ -57,6 +56,7 @@ def delta():
                 "ResultsPerPage": 1,
                 "Page": 1,
             }
+
             res = requests.post(url, headers=headers, json=myson)
             the_sonj= res.text
             data = json.loads(the_sonj)
@@ -65,11 +65,10 @@ def delta():
             except:
                 print('had me at BOB')
                 continue
-            print(bob)
             if bob == []:
                 continue
+
             prop=bob[0]['property']
-            
             current_owner = prop['summary']['currentOwners'][0]
             id_= current_owner['name']['tahoeId']
             if id_ == None:
@@ -93,7 +92,6 @@ def delta():
                 continue
             the_brother=the_father.text
             the_daughter = json.loads(the_brother)
-           
             try:
                 ahsoka = the_daughter['persons']
                 # Process divi_data here
@@ -121,12 +119,12 @@ def delta():
                     new_email = emails[0:2]
                     new_phone = phone_s[0:2]
                     break
-            wright.writerow({"ï»¿fc_transaction_id": li['ï»¿fc_transaction_id'], 
+            wright.writerow({"ï»¿fc_transaction_id": li["ï»¿fc_transaction_id"], 
             'Last Name': recorded_last,
             'First Name': recorded_first,
             "Address": li['Address'],
-            "State": li["State"],
             "City": li["City"],
+            "State": li["State"],
             "Zip": li["Zip"],
             "Phone number": new_phone[0]if new_phone else '',
             "Phone 2": new_phone[1] if len(new_phone)> 1 else '',
@@ -135,9 +133,10 @@ def delta():
             })
             print(row, ' out of ',len(list_dict), ' fetched and processed ')
             row+=1
+
 if __name__ == "__main__":
     list_dict = []
-    with open("Address1.csv", "r") as file:
+    with open("Address.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
     delta()

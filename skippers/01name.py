@@ -3,21 +3,17 @@ import json
 import pprint
 import csv
 import os
-t=1
 from hocus import username, password
 pp = pprint.PrettyPrinter(0)
-
 def check_names_to_full(names, full):
     arry=[]
     for n in names:
         if n.lower() == full.lower():
             arry.append(n.upper())
             return(arry)
-        
 def go_to_first_last_name(iterable):
     for i in iterable:
         return i['firstName'], i['lastName']
-
 url = "https://api.galaxysearchapi.com/PersonSearch"
 headers = {
     "accept": "application/json",
@@ -53,9 +49,7 @@ def delta():
                     {
                         "AddressLine2": city_state
                     }
-
-                ]
-                ,
+                ],
                 "Includes": ["PhoneNumbers", "EmailAddresses"],
                 "FilterOptions": ['IncludeSevenDigitPhoneNumbers', 'IncludeLatestRecordOnly'],
                 "Page": 1,
@@ -63,7 +57,6 @@ def delta():
             res = requests.post(url, headers=headers, json=myson)
             the_sonj= res.text
             data = json.loads(the_sonj)
-            print(data)
             try:
                 divi_data = data['persons']
                 # Process divi_data here
@@ -87,7 +80,7 @@ def delta():
                         new_email = emails[0:2]
                         new_phone = phone_s[0:2]
                         break
-            wright.writerow({"ï»¿fc_transaction_id": li['ï»¿fc_transaction_id'], 
+            wright.writerow({"ï»¿fc_transaction_id": li['fc_transaction_id'], 
             "First Name": firstN,
             "Last Name": lastN,
             "Address": address,
@@ -103,7 +96,7 @@ def delta():
             row+=1
 if __name__ == "__main__":
     list_dict = []
-    with open("namez Ga.csv", "r") as file:
+    with open("Names.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
 
