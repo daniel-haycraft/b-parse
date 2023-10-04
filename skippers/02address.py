@@ -119,7 +119,7 @@ def delta():
                     new_email = emails[0:2]
                     new_phone = phone_s[0:2]
                     break
-            wright.writerow({"ï»¿fc_transaction_id": li["fc_transaction_id"], 
+            wright.writerow({"ï»¿fc_transaction_id": li["ï»¿fc_transaction_id"], 
             'Last Name': recorded_last,
             'First Name': recorded_first,
             "Address": li['Address'],
@@ -136,7 +136,7 @@ def delta():
 
 if __name__ == "__main__":
     list_dict = []
-    with open("Adresses.csv", "r") as file:
+    with open("add.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
     delta()
