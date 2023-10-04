@@ -2,6 +2,8 @@ Documentation:
 **requriment for new file.csv**
 Transaction id, Full Name, Mailing addresss
 
+**full name is just address you get from scrape**
+
 **Hey**
 Copy file path from csv file.
 open terminal
