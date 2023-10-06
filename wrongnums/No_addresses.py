@@ -31,7 +31,7 @@ no_pass=[]
 not_sure=[]
 
 def delta():
-    with open('Wrong Number Correction.csv', 'w', newline='\n') as file:
+    with open('Wrong Number Correct.csv', 'w', newline='\n') as file:
         # Record ID - Contact,First Name,Last Name,Email,Phone number,Contact owner,Company name
         # 'Mailing Address','Mailing City','Mailing State','Mailing Zip'
 
@@ -102,7 +102,7 @@ def delta():
 
 if __name__ == "__main__":
     list_dict = []
-    with open("wrongs.csv", "r") as file:
+    with open("wrongo.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
     delta()

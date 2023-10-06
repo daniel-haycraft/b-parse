@@ -16,8 +16,9 @@ def alpha(list_dict):
         splitter = li['Full Name'].split("\n")
         detecting_tags(splitter)
         length_of_splitter = len(splitter)
-        if len(splitter) <= 1:
-            print(len(splitter), "1 or less than 1") 
+        print(splitter) 
+        if len(splitter) <= 1 or splitter[0] == '':
+            print(len(splitter), "1 or less than 1")
         elif splitter[0][0].isnumeric() == False:
             if length_of_splitter == 3:
                 splitting_chars_only(splitter)
@@ -53,13 +54,13 @@ def bravo(list_dict):
     for li in list_dict:
         mailing_spliter = li["Mailing Address"].split("\n")
         if len(mailing_spliter) == 2:
-                splitting_chars_only(mailing_spliter)
-                joiner = ", ".join(mailing_spliter)
-                li["Mailing Address"]= joiner
-                li['Mailing Street Address']= mailing_spliter[0]
-                li['Mailing City']= mailing_spliter[1]
-                li['Mailing State']= mailing_spliter[2]
-                li['Mailing Zip']= mailing_spliter[3]
+            splitting_chars_only(mailing_spliter)
+            joiner = ", ".join(mailing_spliter)
+            li["Mailing Address"]= joiner
+            li['Mailing Street Address']= mailing_spliter[0]
+            li['Mailing City']= mailing_spliter[1]
+            li['Mailing State']= mailing_spliter[2]
+            li['Mailing Zip']= mailing_spliter[3]
         elif len(mailing_spliter) == 3:
             joining_ste_nums_three(mailing_spliter)
             splitting_chars_only(mailing_spliter)
