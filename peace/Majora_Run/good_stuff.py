@@ -33,7 +33,6 @@ def alpha(list_dict):
                 city=splitter[2], state=splitter[3], zip_=splitter[4])
         elif splitter[0][0].isnumeric():
                 if len(splitter) == 2:
-                    splitter
                     splitting_chars_only(splitter)
                     joiner = ", ".join(splitter)
                     Charlie.handle_the_update(li, fullname=joiner, name=' ', addy=splitter[0], 

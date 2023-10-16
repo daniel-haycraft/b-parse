@@ -20,7 +20,7 @@ _AKA THIS IS WHERE ALL THE CODE IS FILTERED INTO_
 }
 
 Key definitions for variables ***definitions***:
-li is from a for loop that iterates through a dictionary: Dictionary of imported keys and values from the csv file. 
+**li** is from a for loop that iterates through a dictionary: Dictionary of imported keys and values from the csv file. 
 
 __refrences__= LETTER and underscores are meant for referencing function inside other files and functions
 eg.__E.__**detecting tags**
@@ -33,7 +33,7 @@ eg.__E.__**detecting tags**
 **1** structer.py
 
 **A.** **Update_to_csv**{
-class object handles the updates to the li*:
+class object handles the updates to the *li*:
 }
 ------------------------------------------------------
 **2**  **functs.py**
@@ -106,5 +106,4 @@ it will use the same logic just as before EXCEPT when the length == 3
 __D.__ **joining_ste_nums_three** will exist instead of nums_four 
 }
 
-*bravo* may be dismantaled
-for changes
+*bravo* doesn't work

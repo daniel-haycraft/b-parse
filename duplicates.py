@@ -1,12 +1,14 @@
 import csv
 import re
-pattern = r'\d+'
-pattern2 = r'(\d{3})(\d{3})(\d{4})'
+strip_NonNumber = r'\d+'
+phone_number_format = r'(\d{3})(\d{3})(\d{4})'
+
 lister = []
 new_contacts=[]
 good_number=[]
 good_full=[]
 bad_nums = []
+
 with open('contacts.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     lister=list(my_dict)
@@ -21,18 +23,18 @@ for li in lister:
     good_full.append(extra)
     good_full.append(full)
     phone_number = li["Phone Number"]
-    numeric_digits = ''.join(re.findall(pattern, phone_number))
+    numeric_digits = ''.join(re.findall(strip_NonNumbers, phone_number))
     li["Phone Number"] = numeric_digits
     phone_number = li["Phone Number"]
     if len(phone_number) == 10:
-        formatted_number = re.sub(pattern2, r'(\1) \2-\3', phone_number)
+        formatted_number = re.sub(phone_number_format, r'(\1) \2-\3', phone_number)
         x = formatted_number
         li["Phone Number"] =x
         phone_number =li["Phone Number"]
         good_number.append(phone_number)
     elif len(phone_number) == 11:
         phone_number = phone_number[1:]
-        formatted_number = re.sub(pattern2, r'(\1) \2-\3', phone_number)
+        formatted_number = re.sub(phone_number_format, r'(\1) \2-\3', phone_number)
         x = formatted_number
         li["Phone Number"]=x
         phone_number =li["Phone Number"]
