@@ -72,8 +72,8 @@ def delta():
                         new_phone = phone_s[0:2]
                         break
             print(li)
-            wright.writerow({"MlsNumber": li['MlsNumber'],
-            "Full Name": li["ï»¿Full Name"],
+            wright.writerow({"MlsNumber": li['ï»¿MlsNumber'],
+            "Full Name": li["Full Name"],
             "First Name": firstN,
             "Last Name": lastN,
             "Old Phone": phone,
@@ -86,7 +86,7 @@ def delta():
             row+=1
 if __name__ == "__main__":
     list_dict = []
-    with open("lo.csv", "r") as file:
+    with open("Buyers list.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
 

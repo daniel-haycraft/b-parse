@@ -13,13 +13,13 @@ contacts=[]
 with open('contacts.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     lister=list(my_dict)
-with open('new.csv',"r",encoding="cp437") as f:
+with open('emails.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     new_contacts=list(my_dict)
 for li in lister:
     first=li["First Name"]
     last=li['Last Name']
-    full=li['Full name']
+    full=li['Full Name']
     contact_id = li["Record ID"]
     extra=f'{first} {last}'
     phone_number = li["Phone Number"]
@@ -67,7 +67,7 @@ for li in lister:
         contacts.append(bad_dict)
         
 for new in new_contacts:
-    new_phone = new["Phone number"]
+    new_phone = new["Phone Number"]
     new_first = new["First Name"]
     new_last=new['Last Name']
     ext=new["Full Name"]
@@ -101,24 +101,24 @@ def witch_queen():
         wright.writeheader()
         for n in final_contact:
             print(n)
-            wright.writerow({"fc_transaction_id": n["fc_transaction_id"], 
+            wright.writerow({"fc_transaction_id": n["∩╗┐fc_transaction_id"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
-            "Address": n["Address"],
-            "State": n["State"],
-            "City": n["City"],
-            "Zip": n["Zip"],
-            "Phone number": n["Phone number"],
-            "Phone 2": n["Phone 2"],
-            "Prem Email": n["Prem Email"],
-            "Email0": n["Email0"],
-            "MS Lender": n["MS Lender"],
-            "MS County": n["MS County"],
-            "MS Statistical Area": n["MS Statistical Area"],
-            "Notes": n["Notes"],
-            "MS FC Recorded Date": n["MS FC Recorded Date"],
-            "Lead Source": "Market Sizing",
+            # "Address": n["Address"],
+            # "State": n["State"],
+            # "City": n["City"],
+            # "Zip": n["Zip"],
+            "Phone number": n["Phone Number"],
+            # "Phone 2": n["Phone 2"],
+            "Prem Email": n["Email"],
+            "Email0": n["Email2"],
+            # "MS Lender": n["MS Lender"],
+            # "MS County": n["MS County"],
+            # "MS Statistical Area": n["MS Statistical Area"],
+            # "Notes": n["Notes"],
+            # "MS FC Recorded Date": n["MS FC Recorded Date"],
+            # "Lead Source": "Market Sizing",
             "Record ID": n["Record ID"] 
             })
 
