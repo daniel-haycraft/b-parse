@@ -36,7 +36,7 @@ def delta():
         # 'Mailing Address','Mailing City','Mailing State','Mailing Zip'
 
         fieldnames = ['Record ID - Contact','Last Name','First Name','Phone number','Phone 2','Prem Email',
-        'Market Sizing Email 2', 'Replaced Phone Number']
+        'Market Sizing Email 2', 'Replaced Phone Number', "Number of Associated Deals"]
 
         wright = csv.DictWriter(file, fieldnames=fieldnames)
         wright.writeheader() 
@@ -95,7 +95,7 @@ def delta():
             "Phone 2": new_phone[1] if len(new_phone)> 1 else '',
             "Prem Email":new_email[0]if new_email else '',
             "Market Sizing Email 2": new_email[1] if len(new_email)> 1 else '',
-            "Replaced Phone Number": li['Phone Number']
+            "Number of Associated Deals": li["Number of Associated Deals"]
             })
             
             print(row, ' out of ',len(list_dict), ' fetched and processed ')
