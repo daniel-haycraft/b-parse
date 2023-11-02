@@ -1,6 +1,6 @@
 import csv
 list_az=[]
-with open("Book1.csv", 'r') as az:
+with open("AZ.csv", 'r') as az:
     my_az = csv.DictReader(az)
     list_az = list(my_az)
 

@@ -6,7 +6,7 @@ cursor = cnxn.cursor()
 x=cursor.execute('SELECT "Email", "Phone Number", "Full Name", "Id", "First Name", "Last Name" FROM Contacts')
 
 row = 0
-with open("crazy_contacts2.csv", 'w', encoding="cp437",newline='\n') as f:
+with open("all.csv", 'w', encoding="cp437",newline='\n') as f:
     fieldnames = ["Record ID","First Name","Last Name","Phone Number","Full Name","Email"]
     wright = csv.DictWriter(f, fieldnames=fieldnames)
     wright.writeheader()

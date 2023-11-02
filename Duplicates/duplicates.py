@@ -10,12 +10,13 @@ good_full=[]
 bad_nums = []
 final_contact=[]
 contacts=[]
-with open('contacts.csv',"r",encoding="cp437") as f:
+with open('all.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     lister=list(my_dict)
-with open('Middle.csv',"r",encoding="cp437") as f:
+with open('names thrawn.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     new_contacts=list(my_dict)
+    
 for li in lister:
     first=li["First Name"]
     last=li['Last Name']
@@ -35,7 +36,7 @@ for li in lister:
             "Fname":first,
             "Lname":last,
             "Ffull":full,
-            "extra": extra,
+            "extra":extra,
             "phone":phone_number,
             "Record ID": contact_id
             }
@@ -50,7 +51,7 @@ for li in lister:
             "Fname":first,
             "Lname":last,
             "Ffull":full,
-            "extra": extra,
+            "extra":extra,
             "phone":phone_number,
             "Record ID": contact_id
             }
@@ -67,20 +68,16 @@ for li in lister:
         contacts.append(bad_dict)
         
 for new in new_contacts:
-    print(new)
     new_phone = new["Phone Number"]
     new_first = new["First Name"]
     new_last=new['Last Name']
-    ext=new["∩╗┐Full Name"]
+    ext=new["Full Name"]
     new_full = f'{new_first} {new_last}'
     phone_exists = next((contact for contact in contacts if contact["phone"] == new_phone), None)
     full_name_exists = next((contact for contact in contacts if contact["Ffull"] == new_full), None)
     extra_full_name_exists = next((contact for contact in contacts if contact["extra"] == new_full), None)
     ext_extra_name_exists = next((contact for contact in contacts if contact["extra"] == ext), None)
-    if phone_exists:
-        new["Record ID"] = phone_exists.get("Record ID", None)
-        final_contact.append(new)
-    elif full_name_exists:
+    if full_name_exists:
         new["Record ID"] = full_name_exists.get("Record ID", None)
         final_contact.append(new)
     elif extra_full_name_exists:
@@ -96,31 +93,31 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone number','Phone 2','Prem Email',
-        'Email0', "MS Lender", "MS County", "MS Statistical Area", "Notes", "Lead Source","MS FC Recorded Date", "Record ID"]
+        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone number','Phone 2','Email',
+        'Market Sizing Email 2', "MS Lender", "MS County", "MS Statistical Area", "Notes", "Lead Source","MS FC Recorded Date", "Record ID"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
             print(n)
             wright.writerow({
-            # "fc_transaction_id": n["∩╗┐fc_transaction_id"], 
+            "fc_transaction_id": n["fc_transaction_id"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
-            "Full Name": n['∩╗┐Full Name'],
-            "Street Address": n["Street Address"],
+            "Full Name": n['Full Name'],
+            "Street Address": n["Address"],
             "State": n["State"],
             "City": n["City"],
             "Zip": n["Zip"],
             "Phone number": n["Phone Number"],
             "Phone 2": n["Phone 2"],
-            "Prem Email": n["Email"],
-            # "Email0": n["Email2"],
-            # "MS Lender": n["MS Lender"],
-            # "MS County": n["MS County"],
-            # "MS Statistical Area": n["MS Statistical Area"],
-            # "Notes": n["Notes"],
-            # "MS FC Recorded Date": n["MS FC Recorded Date"],
-            "Lead Source": n["Lead Source"],
+            "Email": n["Prem Email"],
+            "Market Sizing Email 2": n["Email0"],
+            "MS Lender": n["MS Lender"],
+            "MS County": n["MS County"],
+            "MS Statistical Area": n["MS Statistical Area"],
+            "Notes": n["Notes"],
+            "MS FC Recorded Date": n["MS FC Recorded Date"],
+            "Lead Source": "Market Sizing",
             "Record ID": n["Record ID"] 
             })
 
