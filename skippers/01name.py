@@ -29,7 +29,7 @@ not_sure=[]
 
 def delta():
     with open('names thrawn.csv', 'w', encoding="cp437", newline='\n') as file:
-        fieldnames = ['ï»¿fc_transaction_id','Full Name','Last Name','First Name','Address', 'State', 'City', 'Zip','Phone number','Phone 2','Prem Email',
+        fieldnames = ['fc_transaction_id','Full Name','Last Name','First Name','Address', 'State', 'City', 'Zip','Phone number','Phone 2','Prem Email',
         'Email0']
         wright = csv.DictWriter(file, fieldnames=fieldnames)
         wright.writeheader() 
@@ -80,7 +80,7 @@ def delta():
                         new_email = emails[0:2]
                         new_phone = phone_s[0:2]
                         break
-            wright.writerow({"ï»¿fc_transaction_id": li['fc_transaction_id'],
+            wright.writerow({"fc_transaction_id": li['ï»¿fc_transaction_id'],
             "Full Name": li["Full Name"],
             "First Name": firstN,
             "Last Name": lastN,
@@ -97,7 +97,7 @@ def delta():
             row+=1
 if __name__ == "__main__":
     list_dict = []
-    with open("names.csv", "r") as file:
+    with open("./skippers/names.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
 

@@ -68,7 +68,7 @@ for li in lister:
         contacts.append(bad_dict)
         
 for new in new_contacts:
-    new_phone = new["Phone Number"]
+    new_phone = new["Phone number"]
     new_first = new["First Name"]
     new_last=new['Last Name']
     ext=new["Full Name"]
@@ -100,7 +100,7 @@ def witch_queen():
         for n in final_contact:
             print(n)
             wright.writerow({
-            "fc_transaction_id": n["fc_transaction_id"], 
+            "fc_transaction_id": n["∩╗┐ΓÇ╣┬»┬¿fc_transaction_id"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
@@ -108,7 +108,7 @@ def witch_queen():
             "State": n["State"],
             "City": n["City"],
             "Zip": n["Zip"],
-            "Phone number": n["Phone Number"],
+            "Phone number": n["Phone number"],
             "Phone 2": n["Phone 2"],
             "Email": n["Prem Email"],
             "Market Sizing Email 2": n["Email0"],
