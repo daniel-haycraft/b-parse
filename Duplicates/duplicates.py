@@ -100,7 +100,7 @@ def witch_queen():
         for n in final_contact:
             print(n)
             wright.writerow({
-            "fc_transaction_id": n["∩╗┐ΓÇ╣┬»┬¿fc_transaction_id"], 
+            "fc_transaction_id": n["fc_transaction_id"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
