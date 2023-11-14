@@ -93,7 +93,7 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone number','Phone 2','Email',
+        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone number','Mobile Phone','Email',
         'Market Sizing Email 2', "MS Lender", "MS County", "MS Statistical Area", "Notes", "Lead Source","MS FC Recorded Date", "Record ID"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
@@ -109,7 +109,7 @@ def witch_queen():
             "City": n["City"],
             "Zip": n["Zip"],
             "Phone number": n["Phone number"],
-            "Phone 2": n["Phone 2"],
+            "Mobile Phone": n["Phone 2"],
             "Email": n["Prem Email"],
             "Market Sizing Email 2": n["Email0"],
             "MS Lender": n["MS Lender"],

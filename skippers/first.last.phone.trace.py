@@ -68,25 +68,24 @@ def delta():
                     emails = [x['emailAddress'] for x in top['emailAddresses']]
                     phone_s = [x['phoneNumber'] for x in top['phoneNumbers']]
                     if phone_s or emails:
-                        new_email = emails[0:2]
                         new_phone = phone_s[0:2]
+                        new_email = emails[0:2]
                         break
             print(li)
-            wright.writerow({"MlsNumber": li['ï»¿MlsNumber'],
-            "Full Name": li["Full Name"],
+            wright.writerow({
+            "Full Name": li["ï»¿Full Name"],
             "First Name": firstN,
             "Last Name": lastN,
-            "Old Phone": phone,
+            "Old Phone": li["Phone Number"],
             "Phone number": new_phone[0]if new_phone else '',
             "Phone 2": new_phone[1] if len(new_phone)> 1 else '',
             "Email":new_email[0]if new_email else '',
-            "Email2": new_email[1] if len(new_email)> 1 else '',
-            })
+            "Email2": new_email[1] if len(new_email)> 1 else ''})
             print(row, ' out of ',len(list_dict), ' fetched and processed ')
             row+=1
 if __name__ == "__main__":
     list_dict = []
-    with open("Buyers list.csv", "r") as file:
+    with open("Mufreesboro.csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
 
