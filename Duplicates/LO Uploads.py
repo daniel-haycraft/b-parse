@@ -100,24 +100,13 @@ def witch_queen():
         for n in final_contact:
             print(n)
             wright.writerow({
-            "fc_transaction_id": n["fc_transaction_id"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
-            "Street Address": n["Address"],
             "State": n["State"],
-            "City": n["City"],
-            "Zip": n["Zip"],
             "Phone number": n["Phone number"],
-            "Mobile Phone": n["Phone 2"],
-            "Email": n["Prem Email"],
-            "Market Sizing Email 2": n["Email0"],
-            "MS Lender": n["MS Lender"],
-            "MS County": n["MS County"],
-            "MS Statistical Area": n["MS Statistical Area"],
-            "Notes": n["Notes"],
-            "MS FC Recorded Date": n["MS FC Recorded Date"],
-            "Lead Source": "Market Sizing",
+            "Email": n["Email"],
+            "Lead Source": "LO uploaded List",
             "Record ID": n["Record ID"] 
             })
 
