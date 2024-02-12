@@ -2,7 +2,7 @@ import csv
 
 final_contact = []
 row=0
-with open('../all.csv',"r",encoding="cp437") as f:
+with open('all.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     lister=list(my_dict)
 with open('crossreff.csv',"r",encoding="cp437") as f:

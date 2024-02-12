@@ -68,7 +68,7 @@ for li in lister:
         contacts.append(bad_dict)
         
 for new in new_contacts:
-    new_phone = new["Phone number"]
+    new_phone = new["Phone Number"]
     new_first = new["First Name"]
     new_last=new['Last Name']
     ext=new["Full Name"]
@@ -93,7 +93,7 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone number','Mobile Phone','Email',
+        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone Number','Mobile Phone','Email',
         'Market Sizing Email 2', "MS Lender", "MS County", "MS Statistical Area", "Notes", "Lead Source","MS FC Recorded Date", "Record ID"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
@@ -104,9 +104,11 @@ def witch_queen():
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
             "State": n["State"],
-            "Phone number": n["Phone number"],
+            "Phone Number": n["Phone Number"],
+            "Mobile Phone": n["Mobile Phone"],
             "Email": n["Email"],
-            "Lead Source": "LO uploaded List",
+            "Lead Source": "PDF Scrape",
+            "Notes": n["Notes"],
             "Record ID": n["Record ID"] 
             })
 

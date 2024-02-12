@@ -30,7 +30,7 @@ not_sure=[]
 def delta():
     with open('names thrawn.csv', 'w', encoding="cp437", newline='\n') as file:
         fieldnames = ['fc_transaction_id','Full Name','Last Name','First Name','Address', 'State', 'City', 'Zip','Phone number','Phone 2','Prem Email',
-        'Email0']
+        'Email0', "Notes"]
         wright = csv.DictWriter(file, fieldnames=fieldnames)
         wright.writeheader() 
         row=1
@@ -40,7 +40,7 @@ def delta():
             address= li['Address']
             city= li["City"]
             state= li["State"] 
-            city_state= f"{city}, {state}"      
+            city_state= f"{city}, {state}"
             myson= {
                 "FirstName": firstN,
                 "LastName": lastN,
@@ -80,7 +80,8 @@ def delta():
                         new_email = emails[0:2]
                         new_phone = phone_s[0:2]
                         break
-            wright.writerow({"fc_transaction_id": li['fc_transaction_id'],
+            print(li)
+            wright.writerow({"fc_transaction_id": li['ï»¿fc_transaction_id'],
             "Full Name": li["Full Name"],
             "First Name": firstN,
             "Last Name": lastN,
@@ -92,9 +93,11 @@ def delta():
             "Phone 2": new_phone[1] if len(new_phone)> 1 else '',
             "Prem Email":new_email[0]if new_email else '',
             "Email0": new_email[1] if len(new_email)> 1 else '',
+            "Notes": li["Notes"]
             })
             print(row, ' out of ',len(list_dict), ' fetched and processed ')
             row+=1
+            
 if __name__ == "__main__":
     list_dict = []
     with open("names.csv", "r") as file:

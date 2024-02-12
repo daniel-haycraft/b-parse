@@ -85,7 +85,7 @@ def delta():
             row+=1
 if __name__ == "__main__":
     list_dict = []
-    with open("Mufreesboro.csv", "r") as file:
+    with open(".csv", "r") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
 
