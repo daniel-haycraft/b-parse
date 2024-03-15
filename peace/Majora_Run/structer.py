@@ -10,7 +10,7 @@ class Append_to_csv(object):
     def handle_the_update(li, fullname, name, addy, city, state, zip_):
         li["Full Name"] = fullname
         li["Name"] = name
-        li["Address"] = addy
+        li["Street Address"] = addy
         li["City"] = city
         li["State"] = state
         li["Zip"] = zip_

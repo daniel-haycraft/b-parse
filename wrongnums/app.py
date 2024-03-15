@@ -35,7 +35,7 @@ def delta():
         # Record ID - Contact,First Name,Last Name,Email,Phone number,Contact owner,Company name
         # 'Mailing Address','Mailing City','Mailing State','Mailing Zip'
 
-        fieldnames = ['Record ID - Contact','Last Name','First Name','Phone number','Mobile Phone number','Email',
+        fieldnames = ['Record ID - Contact','Last Name','First Name','Phone Number','Mobile Phone number','Email',
         'Notes', 'Replaced Phone Number', 'Wrong Number?']
 
         wright = csv.DictWriter(file, fieldnames=fieldnames)
@@ -44,17 +44,24 @@ def delta():
         for li in list_dict:
             if li['First Name']== '' or li['Last Name'] == '':
                 continue
-
+            city= li["City"]
+            state= li["State"] 
             firstN = li['First Name']
             lastN = li["Last Name"]
             # phone_number=li['Phone Number']    
-            address = li['Street Address']        
+            address = li['Street Address']    
+            city_state= f"{city}, {state}"    
 # Record ID - Contact,First Name,Last Name,Contact owner,State/Region,Email,Street Address,City
                 # "Address": address,
             myson= {
                 "FirstName": firstN,
                 "LastName": lastN,
                 "Address": address, 
+                "Addresses":[
+                    {
+                        "AddressLine2": city_state
+                    }
+                ],
                 "Includes": ["PhoneNumbers", "EmailAddresses"],
                 "FilterOptions": ['IncludeSevenDigitPhoneNumbers', 'IncludeLatestRecordOnly'],
                 "Page": 1,
@@ -91,11 +98,11 @@ def delta():
             wright.writerow({"Record ID - Contact": li['Record ID - Contact'], 
             "Last Name": lastN,
             "First Name":firstN,
-            "Phone number": new_phone[0]if new_phone else '',
+            "Phone Number": new_phone[0]if new_phone else '',
             "Mobile Phone number": new_phone[1] if len(new_phone)> 1 else '',
             "Email":new_email[0]if new_email else '',
             "Notes": new_email[1] if len(new_email)> 1 else '',
-            "Replaced Phone Number": li["Phone number"],
+            "Replaced Phone Number": li["Phone Number"],
             "Wrong Number?": "No"
             })
             

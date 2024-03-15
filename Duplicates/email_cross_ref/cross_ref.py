@@ -38,7 +38,7 @@ with open("ref_complete.csv", 'w', newline="\n", encoding="cp437") as f:
     wright.writeheader()
     for final in final_contact:
         wright.writerow({
-        "Loan Number": final['∩╗┐Loan Number'],
+        "Loan Number": final['Loan Number'],
         "Record Id": final["Record ID"],
         "Email": final["Email"],
         "hs_Email": final['hs_Email'],

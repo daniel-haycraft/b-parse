@@ -6,7 +6,7 @@ cursor = cnxn.cursor()
 x=cursor.execute('SELECT "Email", "Phone Number", "Full Name", "Id","First Name", "Last Name", "Contact owner", "Lead Source" FROM Contacts')
 row = 0
 with open("all.csv", 'w', encoding="cp437",newline='\n') as f:
-    fieldnames = ["Record ID","First Name","Last Name","Phone Number","Full Name","Email", "Contact Owner", "Lead Source"]
+    fieldnames = ["Record ID","First Name","Last Name","Phone Number","Full Name","Email", "Contact Owner", "Lead Source", "Wrong Number?"]
     wright = csv.DictWriter(f, fieldnames=fieldnames)
     wright.writeheader()
     for c in x:
@@ -20,7 +20,8 @@ with open("all.csv", 'w', encoding="cp437",newline='\n') as f:
                 "Record ID": c[3],
                 "Phone Number":c[1],
                 "Contact Owner": c[6],
-                "Lead Source": c[7]
+                "Lead Source": c[7],
+                "Wrong Number?": c[8]
                 })
         except:
             row+=1

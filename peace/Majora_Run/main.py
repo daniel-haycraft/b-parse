@@ -4,7 +4,7 @@ def up_K():
     x = input(str("send me the path to csv file"))
     x=''.join(i for i in x if i not in '""')
     list_dict = []
-    with open(x, "r") as file:
+    with open(x, "r", encoding="cp437") as file:
         my_dict = csv.DictReader(file)
         list_dict = list(my_dict)
     alpha(list_dict)

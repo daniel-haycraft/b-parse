@@ -28,7 +28,7 @@ no_pass=[]
 not_sure=[]
 
 def delta():
-    with open('emails.csv', 'w', encoding="cp437", newline='\n') as file:
+    with open('names.csv', 'w', encoding="cp437", newline='\n') as file:
         fieldnames = ['MlsNumber','Full Name','Last Name','First Name', "Old Phone",'Phone number','Phone 2','Email','Email2']
         wright = csv.DictWriter(file, fieldnames=fieldnames)
         wright.writeheader() 

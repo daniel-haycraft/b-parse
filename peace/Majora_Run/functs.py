@@ -37,14 +37,14 @@ def joining_ste_nums_three(lst):
 
 def writer_row(majoras_mask):
     with open('r2_py2.csv', "w", newline='\n') as csvfile:
-        fieldnames = ['fc_transaction_id', 'Full Name', 'Name', 'Address','City', 'State', 'Zip']
+        fieldnames = ['fc_transaction_id', 'Full Name', 'Name', 'Street Address','City', 'State', 'Zip', 'Notes']
         write = csv.DictWriter(csvfile, fieldnames=fieldnames)
         write.writeheader()
         for li in majoras_mask:
-            write.writerow({'fc_transaction_id': li['ï»¿fc_transaction_id'], 
+            write.writerow({'fc_transaction_id': li['fc_transaction_id'], 
                             'Full Name': li['Full Name'],
                             'Name': li['Name'],
-                            'Address':li['Address'],
+                            'Street Address':li['Street Address'],
                             'City': li['City'],
                             'State':li['State'],
                             'Zip':li['Zip'],

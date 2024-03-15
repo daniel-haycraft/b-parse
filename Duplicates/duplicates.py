@@ -10,7 +10,7 @@ good_full=[]
 bad_nums = []
 final_contact=[]
 contacts=[]
-with open('newstuff/Duplicates/all.csv',"r",encoding="cp437") as f:
+with open('all.csv',"r",encoding="cp437") as f:
     my_dict=csv.DictReader(f)
     lister=list(my_dict)
 with open('names thrawn.csv',"r",encoding="cp437") as f:
@@ -68,7 +68,7 @@ for li in lister:
         contacts.append(bad_dict)
         
 for new in new_contacts:
-    new_phone = new["Phone number"]
+    new_phone = new["Phone Number"]
     new_first = new["First Name"]
     new_last=new['Last Name']
     ext=new["Full Name"]
@@ -93,8 +93,7 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone number','Mobile Phone','Email',
-        'Market Sizing Email 2', "MS Lender", "MS County", "MS Statistical Area", "Notes", "Lead Source","MS FC Recorded Date", "Record ID"]
+        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone Number','Mobile Phone','Email', "Notes", "Lead Source", "Record ID"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
@@ -104,19 +103,14 @@ def witch_queen():
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
-            "Street Address": n["Address"],
+            "Street Address": n["Street Address"],
             "State": n["State"],
             "City": n["City"],
             "Zip": n["Zip"],
-            "Phone number": n["Phone number"],
-            "Mobile Phone": n["Phone 2"],
-            "Email": n["Prem Email"],
-            "Market Sizing Email 2": n["Email0"],
-            "MS Lender": n["MS Lender"],
-            "MS County": n["MS County"],
-            "MS Statistical Area": n["MS Statistical Area"],
+            "Phone Number": n["Phone Number"],
+            "Mobile Phone": n["Mobile Phone"],
+            "Email": n["Email"],
             "Notes": n["Notes"],
-            "MS FC Recorded Date": n["MS FC Recorded Date"],
             "Lead Source": "Market Sizing",
             "Record ID": n["Record ID"] 
             })

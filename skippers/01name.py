@@ -29,17 +29,18 @@ not_sure=[]
 
 def delta():
     with open('names thrawn.csv', 'w', encoding="cp437", newline='\n') as file:
-        fieldnames = ['fc_transaction_id','Full Name','Last Name','First Name','Address', 'State', 'City', 'Zip','Phone number','Phone 2','Prem Email',
-        'Email0', "Notes"]
+        fieldnames = ['fc_transaction_id','Full Name','Last Name','First Name','Street Address', 'State', 'City', 'Zip','Phone Number','Mobile Phone','Prem Email',
+        'Email', "Notes"]
         wright = csv.DictWriter(file, fieldnames=fieldnames)
         wright.writeheader() 
         row=1
         for li in list_dict:
             firstN= li["First Name"]
             lastN= li["Last Name"]
-            address= li['Address']
+            address= li['Street Address']
             city= li["City"]
             state= li["State"] 
+            zip_= li["Zip"]
             city_state= f"{city}, {state}"
             myson= {
                 "FirstName": firstN,
@@ -81,18 +82,17 @@ def delta():
                         new_phone = phone_s[0:2]
                         break
             print(li)
-            wright.writerow({"fc_transaction_id": li['ï»¿fc_transaction_id'],
+            wright.writerow({"fc_transaction_id": li['fc_transaction_id'],
             "Full Name": li["Full Name"],
             "First Name": firstN,
             "Last Name": lastN,
-            "Address": address,
+            "Street Address": address,
             "State": state,
             "City": city,
             "Zip": li["Zip"],
-            "Phone number": new_phone[0]if new_phone else '',
-            "Phone 2": new_phone[1] if len(new_phone)> 1 else '',
-            "Prem Email":new_email[0]if new_email else '',
-            "Email0": new_email[1] if len(new_email)> 1 else '',
+            "Phone Number": new_phone[0]if new_phone else '',
+            "Mobile Phone": new_phone[1] if len(new_phone)> 1 else '',
+            "Email":new_email[0]if new_email else '',
             "Notes": li["Notes"]
             })
             print(row, ' out of ',len(list_dict), ' fetched and processed ')

@@ -7,7 +7,7 @@ bad_mailing_array=[]
 def alpha(list_dict):
     for li in list_dict:
         print(li.keys())
-        li.update({"Name":" ", "Address": " ", 
+        li.update({"Name":" ", "Street Address": " ", 
                    "City":" ", "State": " ", 
                    "Zip": " ",
                     'Mailing Street Address': " ",
