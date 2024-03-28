@@ -11,9 +11,10 @@ params={
 "api_key": 'IBFP-FDUlIyAnY_mJuzIjg',
 "page": 1,
 "page_size":10000,
-'q[transaction_date_gteq]': '01/01/2023',
-'q[transaction_date_lteq]': '01/01/2024',
-'q[fc_transaction_id_cont]':'Az',
+'q[transaction_date_gteq]': '01/01/2024',
+'q[transaction_date_lteq]': '02/01/2024',
+'q[state_code_in][]':'AZ',
+# 'q[fc_transaction_id_cont]':'Az',
 # "q[county_in][]":"s_Maricopa-Az",
 # "q[county_in][]":"s_Mohave-Az",
 # "q[county_in][]":"s_Pima-Az",
@@ -32,9 +33,8 @@ if response.status_code == 200:
     data = response.json()
     transactions = data["transactions"]
     for t in transactions:
-        
-        if t['state_name'] == 'ARIZONA':
-            data_array.append(t)
+        # if t['state_name'] == 'ARIZONA':
+        data_array.append(t)
 else:
     # Print an error message if the request was not successful
     print('Error:', response.reason)
@@ -44,7 +44,6 @@ with open("fork.csv", 'w', newline='\n')as file:
     wright = csv.DictWriter(file, fieldnames=fieldnames)
     wright.writeheader()
     for data in data_array:
-        print(data['legal_1'])
         # print('Data')
         # pp.pprint(data)
         # print('Companies')
@@ -79,7 +78,7 @@ with open("fork.csv", 'w', newline='\n')as file:
             days=str(days)
             days=days.split(" ")
             days = int(days[0])
-            if days >= 90:
+            if days:
                 wright.writerow({
                 "fc_transaction_id": data['fc_transaction_id'],
                 "Scrape LLC": data['grantor'],

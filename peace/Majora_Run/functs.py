@@ -36,7 +36,7 @@ def joining_ste_nums_three(lst):
     return lst
 
 def writer_row(majoras_mask):
-    with open('r2_py2.csv', "w", newline='\n') as csvfile:
+    with open('r2_py2.csv', "w", newline='\n', encoding="cp437") as csvfile:
         fieldnames = ['fc_transaction_id', 'Full Name', 'Name', 'Street Address','City', 'State', 'Zip', 'Notes']
         write = csv.DictWriter(csvfile, fieldnames=fieldnames)
         write.writeheader()

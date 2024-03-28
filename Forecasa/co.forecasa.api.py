@@ -9,12 +9,13 @@ key = "IBFP-FDUlIyAnY_mJuzIjg"
 url = "https://webapp.forecasa.com/api/v1/transactions"
 params={
 "api_key": 'IBFP-FDUlIyAnY_mJuzIjg',
-"page": 1,
 "page_size":10000,
 'q[transaction_date_gteq]': '01/01/2023',
-'q[transaction_date_lteq]': '01/01/2024',
-'q[state_code_in][]':'TN',
-# 'q[fc_transaction_id_cont]':'Tn',
+"q[transaction_type_in][]":"MORTGAGE",
+"q[company_tags_in][]":"private_lender",
+'q[transaction_date_lteq]': '06/01/2023',
+'q[state_code_in][]':'CO',
+# 'q[fc_transaction_id_cont]':'Co',
 # "q[county_in][]":"s_Maricopa-Az",
 # "q[county_in][]":"s_Mohave-Az",
 # "q[county_in][]":"s_Pima-Az",
@@ -22,26 +23,22 @@ params={
 # "q[county_in][]":"s_Yavapai-Az",
 # "q[county_in][]":"s_Yuma-Az",
 # "q[county_in][]":"s_Coconino-Az",
-"q[transaction_type_in][]":"MORTGAGE",
-"q[company_tags_in][]":"private_lender",
-
 }
+
 data_array =[]
 response = requests.get(url,params=params)
-if response.status_code == 200:
-    # Process the response data (assuming it's JSON)
-    data = response.json()
-    transactions = data["transactions"]
-    for t in transactions:
-        
-        if t['state_name'] == 'TENNESSEE':
-            data_array.append(t)
-else:
-    # Print an error message if the request was not successful
-    print('Error:', response.reason)
 
-    
-print(len(data_array))
+# Process the response data (assuming it's JSON)
+data = response.json()
+transactions = data["transactions"]
+for t in transactions:
+    if t['state_name'] == 'COLORADO':
+        data_array.append(t)
+    else:
+        print(t['state_name'])
+# pp.pprint(data_array)
+pp.pprint(len(data_array))
+row = 0
 with open("fork.csv", 'w', newline='\n')as file:
     fieldnames = ['fc_transaction_id', 'Scrape LLC','Secondary LLC', 'Lender', 'state', 'county', 'msa', 'recorded date', 'updated at','days updated apart']
     wright = csv.DictWriter(file, fieldnames=fieldnames)
@@ -53,6 +50,7 @@ with open("fork.csv", 'w', newline='\n')as file:
         # pp.pprint(companies)
         companies = data['transaction_meta']['companies']
         if companies == None:
+            row+=1
             continue
         else:
             for comps in companies:
@@ -81,7 +79,7 @@ with open("fork.csv", 'w', newline='\n')as file:
             days=str(days)
             days=days.split(" ")
             days = int(days[0])
-            if days >= 90:
+            if days:
                 wright.writerow({
                 "fc_transaction_id": data['fc_transaction_id'],
                 "Scrape LLC": data['grantor'],
@@ -94,3 +92,4 @@ with open("fork.csv", 'w', newline='\n')as file:
                 "updated at": str(updated),
                 "days updated apart": str(days)
                 })
+print(row)
