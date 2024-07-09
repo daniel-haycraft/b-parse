@@ -58,6 +58,7 @@ def delta():
             res = requests.post(url, headers=headers, json=myson)
             the_sonj= res.text
             data = json.loads(the_sonj)
+            print(data)
             try:
                 divi_data = data['persons']
                 # Process divi_data here

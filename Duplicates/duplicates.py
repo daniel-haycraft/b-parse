@@ -93,7 +93,9 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 'City', 'Zip','Phone Number','Mobile Phone','Email', "Notes", "Lead Source", "Record ID"]
+        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 
+        'City', 'Zip','Phone Number','Mobile Phone','Email',"MS Lender","MS County",
+        "MS Statistical Area",'MS FC Recorded Date', "Notes", "Lead Source", "Record ID"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
@@ -103,13 +105,17 @@ def witch_queen():
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
-            "Street Address": n["Street Address"],
-            "State": n["State"],
-            "City": n["City"],
-            "Zip": n["Zip"],
+            # "Street Address": n["Street Address"],
+            # "State": n["State"],
+            # "City": n["City"],
+            # "Zip": n["Zip"],
             "Phone Number": n["Phone Number"],
             "Mobile Phone": n["Mobile Phone"],
             "Email": n["Email"],
+            # "MS Lender": n['MS Lender'],
+            # "MS County": n["MS County"],
+            # "MS Statistical Area": n["MS Statistical Area"],
+            # 'MS FC Recorded Date': n['MS FC Recorded Date'],
             "Notes": n["Notes"],
             "Lead Source": "Market Sizing",
             "Record ID": n["Record ID"] 

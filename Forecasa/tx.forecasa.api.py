@@ -7,22 +7,23 @@ from datetime import datetime as dt
 pp = pprint.PrettyPrinter(0)
 key = "IBFP-FDUlIyAnY_mJuzIjg"
 url = "https://webapp.forecasa.com/api/v1/transactions"
+try:
+    date1 = str(input("date1 like 01/01/0000 "))
+except:
+    date1 = str(input("date1 like 01/01/0000 "))
+try:
+    date2 = str(input("date2 like 01/01/0000 "))
+except:
+    date2 = str(input("date2 like 01/01/0000 "))
+    
 params={
 "api_key": 'IBFP-FDUlIyAnY_mJuzIjg',
-"page_size":10000,
-'q[transaction_date_gteq]': '01/01/2023',
+"page_size":25000,
+'q[transaction_date_gteq]': date1,
 "q[transaction_type_in][]":"MORTGAGE",
 "q[company_tags_in][]":"private_lender",
-'q[transaction_date_lteq]': '06/01/2023',
+'q[transaction_date_lteq]': date2,
 'q[state_code_in][]':'TX',
-# 'q[fc_transaction_id_cont]':'Co',
-# "q[county_in][]":"s_Maricopa-Az",
-# "q[county_in][]":"s_Mohave-Az",
-# "q[county_in][]":"s_Pima-Az",
-# "q[county_in][]":"s_Pinal-Az",
-# "q[county_in][]":"s_Yavapai-Az",
-# "q[county_in][]":"s_Yuma-Az",
-# "q[county_in][]":"s_Coconino-Az",
 }
 
 data_array =[]
@@ -32,14 +33,15 @@ response = requests.get(url,params=params)
 data = response.json()
 transactions = data["transactions"]
 for t in transactions:
-    if t['state_name'] == 'COLORADO':
-        data_array.append(t)
-    else:
-        print(t['state_name'])
+    data_array.append(t)
+
+contactdate1=date1.replace("/",".")
+contactdate2=date2.replace("/",".")
+csv_name= f'TX {contactdate1} - {contactdate2}.csv'
 # pp.pprint(data_array)
 pp.pprint(len(data_array))
 row = 0
-with open("fork.csv", 'w', newline='\n')as file:
+with open(csv_name, 'w', newline='\n')as file:
     fieldnames = ['fc_transaction_id', 'Scrape LLC','Secondary LLC', 'Lender', 'state', 'county', 'msa', 'recorded date', 'updated at','days updated apart']
     wright = csv.DictWriter(file, fieldnames=fieldnames)
     wright.writeheader()

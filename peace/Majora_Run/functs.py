@@ -41,7 +41,7 @@ def writer_row(majoras_mask):
         write = csv.DictWriter(csvfile, fieldnames=fieldnames)
         write.writeheader()
         for li in majoras_mask:
-            write.writerow({'fc_transaction_id': li['fc_transaction_id'], 
+            write.writerow({'fc_transaction_id': li['∩╗┐fc_transaction_id'], 
                             'Full Name': li['Full Name'],
                             'Name': li['Name'],
                             'Street Address':li['Street Address'],
