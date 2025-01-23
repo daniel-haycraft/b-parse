@@ -37,12 +37,12 @@ if response.status_code == 200:
 else:
     # Print an error message if the request was not successful
     print('Error:', response.reason)    
-# print(len(data_array))
+print(len(data_array))
 contactdate1=date1.replace("/",".")
 contactdate2=date2.replace("/",".")
 csv_name= f'TN {contactdate1} - {contactdate2}.csv'
 with open(csv_name, 'w', newline='\n')as file:
-    fieldnames = ['fc_transaction_id', 'Scrape LLC','Secondary LLC', 'Lender', 'state', 'county', 'msa', 'recorded date', 'updated at','days updated apart']
+    fieldnames = ['fc_transaction_id', 'Scrape LLC', 'Lender', 'state', 'county', 'msa', 'recorded date', 'updated at','days updated apart']
     wright = csv.DictWriter(file, fieldnames=fieldnames)
     wright.writeheader()
     for data in data_array:
@@ -77,9 +77,8 @@ with open(csv_name, 'w', newline='\n')as file:
         days=days.split(" ")
         days = int(days[0])
         wright.writerow({
-        "fc_transaction_id": data['fc_transaction_id'],
+        "fc_transaction_id": data['∩╗┐fc_transaction_id'],
         "Scrape LLC": data['grantor'],
-        "Secondary LLC": 'depreciated',
         "Lender": data["grantee"],
         "state": data["state_name"],
         "county": data["county"],

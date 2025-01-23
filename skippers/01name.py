@@ -85,8 +85,8 @@ def delta():
             print(li)
             wright.writerow({"fc_transaction_id": li['fc_transaction_id'],
             "Full Name": li["Full Name"],
-            "First Name": firstN,
-            "Last Name": lastN,
+            "First Name": li["First Name"],
+            "Last Name": li["Last Name"],
             "Street Address": address,
             "State": state,
             "City": city,

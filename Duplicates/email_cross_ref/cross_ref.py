@@ -42,8 +42,8 @@ def email_looker():
     print(final_contact)
 print(email_looker())
 with open("ref_complete.csv", 'w', encoding="UTF-8",newline="\n") as f:
-    fieldnames = ["Contact Id","Association Label", "Loan Number", "Hs_First", "Hs_Last",'csv full',"csv first", 
-    "csv last", "csv phone","Hs_Phone","hs_Email", "Email", "Lead Source", "Deal Id"]
+    fieldnames = ["Contact Id","Association Label", "Loan Number", "Hs_First", "Hs_Last",'full',"first", 
+    "last", "phone","Hs_Phone","hs_Email", "Email", "Lead Source", "Deal Id"]
     wright = csv.DictWriter(f, fieldnames=fieldnames)
     wright.writeheader()
     for final in final_contact:
@@ -52,12 +52,12 @@ with open("ref_complete.csv", 'w', encoding="UTF-8",newline="\n") as f:
         "Contact Id": final["Record ID"],
         "Email": final["Email"],
         # "hs_Email": final['hs_Email'],
-        "Hs_First": final["First"],
-        "Hs_Last": final["Last"],
-        "csv full": final['Full Name'],
-        # "csv first": final['First Name'],
-        # "csv last": final['Last Name'],
-        "csv phone": final["Phone Number"],
+        # "Hs_First": final["First"],
+        # "Hs_Last": final["Last"],
+        "full": final['Full Name'],
+        "first": final['First Name'],
+        "last": final['Last Name'],
+        "phone": final["Phone Number"],
         # "Hs_Phone": final["hsPhone"],
         # "Lead Source": final["Lead Source"],
         "Deal Id": final["ï»¿Deal Id"],

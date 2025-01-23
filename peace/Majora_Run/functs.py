@@ -42,12 +42,12 @@ def writer_row(majoras_mask):
         write.writeheader()
         for li in majoras_mask:
             write.writerow({'fc_transaction_id': li['∩╗┐fc_transaction_id'], 
-                            'Full Name': li['Full Name'],
-                            'Name': li['Name'],
-                            'Street Address':li['Street Address'],
-                            'City': li['City'],
-                            'State':li['State'],
-                            'Zip':li['Zip'],
+                            'Full Name': li['Full Name'].strip(" "),
+                            'Name': li['Name'].strip(" "),
+                            'Street Address':li['Street Address'].strip(" "),
+                            'City': li['City'].strip(" "),
+                            'State':li['State'].strip(" "),
+                            'Zip':li['Zip'].strip(" "),
                             })
 company_tags = ["LLC", "LP", "LLP", "Inc", "Corporation", "Systems", "Corp", "Ltd.", "L.L.C", "Co.", "GP", "PC", "PLLC", "PA", "LLLP", "DBA", "P.C.", "P.L.L.C.", "P.A.", "LLLLP", "S-Corp", "C-Corp", "SPC", "SCorp", "B-Corp", "D/B/A"]
 

@@ -68,6 +68,7 @@ for li in lister:
         contacts.append(bad_dict)
         
 for new in new_contacts:
+    print(new)
     new_phone = new["Phone Number"]
     new_first = new["First Name"]
     new_last=new['Last Name']
@@ -93,34 +94,38 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ['fc_transaction_id','Last Name','First Name',"Full Name",'Street Address', 'State', 
+        fieldnames = ["Record ID",'Last Name','First Name',"Full Name",'Street Address', 'State', 
         'City', 'Zip','Phone Number','Mobile Phone','Email',"MS Lender","MS County",
-        "MS Statistical Area",'MS FC Recorded Date', "Notes", "Lead Source", "Record ID"]
+        "MS Statistical Area",'MS FC Recorded Date', "Notes", "Lead Source",'fc_transaction_id','Title','Contact Owner',"Company"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
             print(n)
             wright.writerow({
-            "fc_transaction_id": n["fc_transaction_id"], 
+            "Record ID": n["Record ID"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
-            # "Street Address": n["Street Address"],
-            # "State": n["State"],
-            # "City": n["City"],
-            # "Zip": n["Zip"],
+            "Street Address": n["Street Address"],
+            "State": n["State"],
+            "City": n["City"],
+            "Zip": n["Zip"],
             "Phone Number": n["Phone Number"],
             "Mobile Phone": n["Mobile Phone"],
             "Email": n["Email"],
+            # "Company": n["Company"],
+            # "Contact Owner": n["Contact Owner"],
+            # "Title": n["Title"],
             # "MS Lender": n['MS Lender'],
             # "MS County": n["MS County"],
             # "MS Statistical Area": n["MS Statistical Area"],
             # 'MS FC Recorded Date': n['MS FC Recorded Date'],
             "Notes": n["Notes"],
-            "Lead Source": "Market Sizing",
-            "Record ID": n["Record ID"] 
+            # "Lead Source": "",
+            "fc_transaction_id": n["fc_transaction_id"], 
             })
 
 
 witch_queen()
+
 
