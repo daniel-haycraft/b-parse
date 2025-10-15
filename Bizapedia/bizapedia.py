@@ -74,18 +74,17 @@ with open('forecasa.csv',"r", encoding='latin1') as f:
 
 def process_companies(lister, output_file):
     with open(output_file, "w", encoding="utf-8", newline="") as f:
-        fieldnames = ["Error", "fc_transaction_id", "Company", "State", "Street Address", "City", 
-                      "bizState", "Zip", "Full Name", "First Name", "Last Name", "Notes"]
+        fieldnames = ["Error", "fc_transaction_id", "Company", "State", "Property Address", "City", "Zip", "Full Name", "First Name", "Last Name", "Notes"]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
 
         for li in lister:
-            note = f""" llc: {li['name']}, 
-            last mortgage transaction: {li['last_mortgage_date']},
-            average amount spent per loan: {li['average_mortgage_amount']},
-            Last Lender used: {li['last_lender_used']}
-            # of Mortgage Transactions: {li['mortgage_transactions']}
-            Upcoming maturities: "{li["upcoming_maturities"]}""" 
+            note = f""" llc: {li['name']}\n, 
+            last mortgage transaction: {li['last_mortgage_date']},\n
+            average amount spent per loan: {li['average_mortgage_amount']},\n
+            Last Lender used: {li['last_lender_used']},\n
+            # of Mortgage Transactions: {li['mortgage_transactions']},\n
+            Upcoming maturities: "{li["upcoming_maturities"]}\n""" 
             process_company_entry(li, writer, note)
 
 def process_company_entry(entry, writer,note):
@@ -105,15 +104,16 @@ def process_company_entry(entry, writer,note):
         return
     for comp in data.get("Companies", []):
         if "Principals" in comp and comp["Principals"]:
-            principal = comp["Principals"][0]  # Get the first principal
+            
+            principal = comp["Principals"][0]
+            print(principal)  # Get the first principal
             writer.writerow({
                 "Error": err,
                 "Company": company_name.title(),
-                "State": abv_state,
                 "fc_transaction_id": entry.get("id", ""),
-                "Street Address": principal.get("AddressLine1", "").title(),
+                "Property Address": principal.get("AddressLine1", "").title(),
                 "City": principal.get("City", "").title(),
-                "bizState": principal.get("StateProvince", "").title(),
+                "State": principal.get("StateProvince", "").title(),
                 "Zip": principal.get("PostalCode", "").title(),
                 "Full Name": principal.get("PrincipalName", "").title(),
                 "First Name": principal.get("FirstName", "").title(),

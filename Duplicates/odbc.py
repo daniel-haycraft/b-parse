@@ -3,10 +3,10 @@ import csv
 cnxn = pyodbc.connect("DRIVER={CData ODBC Driver for HubSpot}; DATABASE=CData HubSpot Sys; Auth Scheme=OAuth; OAuth Settings Location='C:/Users/Daniel Haycraft/Desktop/newstuff/OAuth.txt'")
 cursor = cnxn.cursor()
 
-x=cursor.execute('SELECT "Email", "Phone Number", "Full Name", "Id","First Name", "Last Name", "Contact owner", "Lead Source" FROM Contacts')
+x=cursor.execute('SELECT "Email", "Phone Number", "Full Name", "Id","First Name", "Last Name", "Contact owner", "Lead Source", "Number of Associated Deals" FROM Contacts')
 row = 0
 with open("all.csv", 'w', encoding="cp437",newline='\n') as f:
-    fieldnames = ["Record ID","First Name","Last Name","Phone Number","Full Name","Email", "Contact Owner", "Lead Source"]
+    fieldnames = ["Record ID","First Name","Last Name","Phone Number","Full Name","Email", "Contact Owner", "Lead Source","Associated Deals"]
     wright = csv.DictWriter(f, fieldnames=fieldnames)
     wright.writeheader()
     for c in x:
@@ -21,6 +21,7 @@ with open("all.csv", 'w', encoding="cp437",newline='\n') as f:
                 "Phone Number":c[1],
                 "Contact Owner": c[6],
                 "Lead Source": c[7],
+                "Associated Deals": c[8] if c[8] != None else '0'
                 })
         except:
             row+=1

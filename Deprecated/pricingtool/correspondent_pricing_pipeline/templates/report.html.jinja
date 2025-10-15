@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Correspondent Pricing Report</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 24px; }
+    h1 { margin-bottom: 0; }
+    h2 { margin-top: 32px; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; }
+    .ok { background: #e6f4ea; color: #137333; }
+    .warn { background: #fce8e6; color: #c5221f; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; }
+    th { background: #f7f7f7; text-align: left; }
+    .meta { color: #555; font-size: 13px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .card { border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 18px; }
+    .small { font-size: 11px; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Correspondent Pricing Report</h1>
+  <p class="meta">Generated from Excel workbook via SQLAlchemy + Jinja2. {{ rows|length }} row(s).</p>
+
+  {% for r in rows %}
+  <div class="card">
+    <div class="grid">
+      <div>
+        <strong>Record ID:</strong> {{ r["Record ID"] }}<br>
+        <strong>State:</strong> {{ r["Property State"] }}<br>
+        <strong>Eligibility:</strong>
+        {% if r["eligible_overall"] %}
+          <span class="pill ok">ELIGIBLE</span>
+        {% else %}
+          <span class="pill warn">INELIGIBLE</span>
+        {% endif %}
+      </div>
+      <div>
+        <strong>Profile:</strong>
+        <div class="small">
+          Experience: {{ r["experience_bucket"] or "-" }}<br>
+          Loan Type: {{ r["loan_type_norm"] or "-" }}<br>
+          Project: {{ r["project_type_norm"] or "-" }}<br>
+          Units: {{ r["units_bucket"] or "-" }}<br>
+          FICO: {{ r["fico_bucket"] or "-" }}
+        </div>
+      </div>
+      <div>
+        <strong>Leverage Caps:</strong>
+        <div class="small">
+          Max LTC: {{ "{:.2%}".format(r["Max LTC"]) if r["Max LTC"] != "" else "-" }}<br>
+          Max LTARV: {{ "{:.2%}".format(r["Max LTARV"]) if r["Max LTARV"] != "" else "-" }}<br>
+          Max LTAIV: {{ "{:.2%}".format(r["Max LTAIV"]) if r["Max LTAIV"] != "" else "-" }}
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <tr>
+        <th>Requested Loan</th>
+        <th>Limit (LTC)</th>
+        <th>Limit (LTARV)</th>
+        <th>Limit (LTAIV)</th>
+        <th>Matrix Min</th>
+        <th>Matrix Max</th>
+        <th>Final Sized Loan</th>
+      </tr>
+      <tr>
+        <td>{{ "{:,.0f}".format(r["requested_loan"]) if r["requested_loan"] != "" else "-" }}</td>
+        <td>{{ "{:,.0f}".format(r["limit_ltc"]) if r["limit_ltc"] != "" else "-" }}</td>
+        <td>{{ "{:,.0f}".format(r["limit_ltarv"]) if r["limit_ltarv"] != "" else "-" }}</td>
+        <td>{{ "{:,.0f}".format(r["limit_ltaiv"]) if r["limit_ltaiv"] != "" else "-" }}</td>
+        <td>{{ "{:,.0f}".format(r["Min Loan Amount"]) if r["Min Loan Amount"] != "" else "-" }}</td>
+        <td>{{ "{:,.0f}".format(r["Max Loan Amount"]) if r["Max Loan Amount"] != "" else "-" }}</td>
+        <td><strong>{{ "{:,.0f}".format(r["final_sized_loan"]) if r["final_sized_loan"] != "" else "-" }}</strong></td>
+      </tr>
+    </table>
+
+    <table>
+      <tr>
+        <th>Base Rate</th>
+        <th>Loan Level Adj</th>
+        <th>Adj Rate</th>
+        <th>Final Rate</th>
+        <th>State Eligible</th>
+        <th>License Required</th>
+        <th>Matrix Match</th>
+      </tr>
+      <tr>
+        <td>{{ "{:.2f}%".format(r["Base Rate"]) if r["Base Rate"] != "" else "-" }}</td>
+        <td>{{ "{:.2f}%".format(r["Loan Level Adj"]) if r["Loan Level Adj"] != "" else "-" }}</td>
+        <td>{{ "{:.2f}%".format(r["Adj Rate"]) if r["Adj Rate"] != "" else "-" }}</td>
+        <td><strong>{{ "{:.2f}%".format(r["final_rate"]) if r["final_rate"] != "" else "-" }}</strong></td>
+        <td>{{ "Yes" if r["eligible_state"] else "No" }}</td>
+        <td>{{ "Yes" if r["AHL_LicenseRequiredBusinessPurposeStates"] else "No" }}</td>
+        <td>{{ "Yes" if r["matched_matrix"] else "No" }}</td>
+      </tr>
+    </table>
+  </div>
+  {% endfor %}
+
+</body>
+</html>

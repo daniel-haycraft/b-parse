@@ -79,52 +79,47 @@ for new in new_contacts:
     extra_full_name_exists = next((contact for contact in contacts if contact["extra"] == new_full), None)
     ext_extra_name_exists = next((contact for contact in contacts if contact["extra"] == ext), None)
     if full_name_exists:
-        new["Record ID"] = full_name_exists.get("Record ID", None)
+        new["Record ID"] = int(full_name_exists.get("Record ID", None))
+        new["Associated Deals"] = full_name_exists.get("Associated Deals", '0')
         final_contact.append(new)
     elif extra_full_name_exists:
-        new["Record ID"] = extra_full_name_exists.get("Record ID", None)
+        new["Record ID"] = int(extra_full_name_exists.get("Record ID", None))
+        new["Associated Deals"] = extra_full_name_exists.get("Associated Deals", '0')
         final_contact.append(new)
     elif ext_extra_name_exists:
-        new["Record ID"] = ext_extra_name_exists.get("Record ID", None)
+        new["Record ID"] = int(ext_extra_name_exists.get("Record ID", None))
+        new["Associated Deals"] = ext_extra_name_exists.get("Associated Deals", '0')
         final_contact.append(new)
     else:
-        new['Record ID'] = ''
+        new['Record ID'] = " "
+        new["Associated Deals"] = 0
         final_contact.append(new)
     
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
         fieldnames = ["Record ID",'Last Name','First Name',"Full Name",'Street Address', 'State', 
-        'City', 'Zip','Phone Number','Mobile Phone','Email',"MS Lender","MS County",
-        "MS Statistical Area",'MS FC Recorded Date', "Notes", "Lead Source",'fc_transaction_id','Title','Contact Owner',"Company"]
+        'City', 'Zip','Phone Number','Mobile Phone','Email', 'Notes','fc_transaction_id','Associated Deals']
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
             print(n)
             wright.writerow({
             "Record ID": n["Record ID"], 
+            "fc_transaction_id": n["fc_transaction_id"], 
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
             "Street Address": n["Street Address"],
             "State": n["State"],
             "City": n["City"],
-            "Zip": n["Zip"],
+            "Zip": n["Zip Code"],
             "Phone Number": n["Phone Number"],
             "Mobile Phone": n["Mobile Phone"],
             "Email": n["Email"],
-            # "Company": n["Company"],
-            # "Contact Owner": n["Contact Owner"],
-            # "Title": n["Title"],
-            # "MS Lender": n['MS Lender'],
-            # "MS County": n["MS County"],
-            # "MS Statistical Area": n["MS Statistical Area"],
-            # 'MS FC Recorded Date': n['MS FC Recorded Date'],
+            "Associated Deals": n["Associated Deals"],
             "Notes": n["Notes"],
-            # "Lead Source": "",
-            "fc_transaction_id": n["fc_transaction_id"], 
             })
-
 
 witch_queen()
 
