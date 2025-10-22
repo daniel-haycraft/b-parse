@@ -53,16 +53,16 @@ def fetch_transactions(li):
         print(f"Request issue for {li.get('Property Address', '<no address>')}: {e}")
         fallback = {**li}
         for k in [
-    'fc_transaction_id', 'fc_house_id', 'FC Transaction Date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
+    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
     'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
     'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
     'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-    'Transaction Type', 'Total Cost', 'Transaction Type', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Delta Opt 1',
-    'Opt 1 Simplified', 'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified',
-    'Opt 2 Percent', 'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason',
-    'Opt1 Purchase/Rehab', 'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP',
-    'Rehab LTFV', 'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage',
-    'Canceled Reason W/ high leverage on LTPP', 'Borrower Source'
+    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
+    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
+    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
+    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
+    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
+    'Borrower Source'
 ]:
             fallback.setdefault(k, '')
         fallback['recorded_date'] = ''
@@ -82,8 +82,8 @@ def fetch_transactions(li):
         for group in ["companies", "cross_companies"]:
             for comp in meta.get(group, []):
                 lender_types.extend(comp.get("tags", []))
-                if comp.get("id"):
-                    company_ids.append(str(comp["id"]))
+                if comp.get("company_id"):
+                    company_ids.append(str(comp["company_id"]))
 
         merged["Lender Type"] = ", ".join(sorted(set(lender_types))) if lender_types else ""
         merged["Company Id"] = ", ".join(sorted(set(company_ids))) if company_ids else ""
@@ -104,16 +104,16 @@ def fetch_transactions(li):
     if not results:
         fallback = {**li}
         for k in [
-    'fc_transaction_id', 'fc_house_id', 'FC Transaction Date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
+    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
     'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
     'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
     'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-    'Transaction Type', 'Total Cost', 'Transaction Type', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Delta Opt 1',
-    'Opt 1 Simplified', 'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified',
-    'Opt 2 Percent', 'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason',
-    'Opt1 Purchase/Rehab', 'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP',
-    'Rehab LTFV', 'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage',
-    'Canceled Reason W/ high leverage on LTPP', 'Borrower Source'
+    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
+    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
+    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
+    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
+    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
+    'Borrower Source'
 ]:
             fallback.setdefault(k, '')
         fallback['recorded_date'] = ''
@@ -141,44 +141,44 @@ def safe_col(name):
 df_out = pd.DataFrame({
     'fc_transaction_id': safe_col('fc_transaction_id'),
     'fc_house_id': safe_col('fc_house_id'),
-    'FC Transaction Date': safe_col('recorded_date'),
-    'FC Maturity Date': safe_col('mortgage_maturity_date'),
-    'FC Borrowing Entity': safe_col('grantor'),
-    'FC Lender': safe_col('grantee'),
-    'FC Loan Amount': safe_col('amount'),
-    'County': safe_col('county'),
-    'FC MSA': safe_col('msa_name'),
-    'FC Comp Amount': safe_col('amount'),
-    'FC Est Compt LTC': "=IF(ISBLANK($G2), "",$G2/$Z2)",
-    'FC Lender Type': safe_col('Lender Type'),
-    'FC Company Id': safe_col('Company Id'),
+    'recorded_date': safe_col('recorded_date'),
+    'mortgage_maturity_date': safe_col('mortgage_maturity_date'),
+    'grantor': safe_col('grantor'),
+    'grantee': safe_col('grantee'),
+    'amount': safe_col('amount'),
+    'county': safe_col('county'),
+    'msa_name': safe_col('msa_name'),
+    'comp_amount': safe_col('amount'),
+    'est_compt_ltc': '=IF(ISBLANK($G2), "",$G2/$Z2)',
+    'Lender Type': safe_col('Lender Type'),
+    'Company Id': safe_col('Company Id'),
     'Status': safe_col('Status'),
-    'Loan Number': safe_col('loan'),
-    'id': safe_col('id'),
-    'Property Address': safe_col('property_address'),
+    'loan': safe_col('loan'),
+    'id': safe_col('∩╗┐id'),
+    'property_address': safe_col('property_address'),
     'city': safe_col('city'),
     'state': safe_col('state'),
     'zip': safe_col('zip'),
-    'COE': safe_col('coe'),
-    'CF1 Loan Amount': safe_col('loan_amount'),
-    'CF1 Loan Request': safe_col('loan_request'),
-    'Purchase Price': safe_col('purchase_price'),
-    'Transaction Type': safe_col('Transaction Type'),
-    'Total Cost': safe_col('total_cost'),
-    'Transaction Type': safe_col('transaction_type'),
-    'UW Approved Amount option 1': safe_col('uw_approved_amount'),
-    'UW LA COE Amount option 1': safe_col('uw_la_coe'),
-    'Opt 1 Delta':'=IF(ISBLANK($G2), "No Forecasa Data",IF($AP2="Acquisition",MAX($AA2,$AB2)-$G2,IF($AP2="Rehab",MAX($AA2,$AB2+AL2)-$G2,"No Terms Given, Forecasa funded ")))',
-    'Opt 1 Simplified':'=IF(AA2<-10000000,"-10M+",IF(ac2<-1000000, "-10m to -1m",IF(ac2<=-500000,"-1M to -500K",IF(ac2<=-200000,"-500K to -200K",IF(ac2<=-75000,"-200K to -75K",IF(ac2<=-50000,"-75K to -50K",IF(ac2<=-25000,"-50K to -25K",IF(ac2<=-10000,"-25K to -10K",IF(ac2<0,"-10K to 0",IF(ac2<=10000,"0–10K",IF(ac2<=25000,"10K–25K",IF(ac2<=50000,"25K–50K",IF(ac2<=75000,"50K–75K",IF(ac2<=200000,"75K–200K",IF(ac2<=500000,"200K–500K",IF(ac2<1000000,"500K–1M","1M+"))))))))))))))))',
-    'Opt 1 Percent':'=IF(ISTEXT(AC2), "", MIN(AC2,$G2)/MAX(AC2,$G2))',
+    'coe': safe_col('coe'),
+    'loan_amount': safe_col('loan_amount'),
+    'loan_request': safe_col('loan_request'),
+    'purchase_price': safe_col('purchase_price'),
+    'transaction_type': safe_col('transaction_type'),
+    'total_cost': safe_col('total_cost'),
+    'transaction_type': safe_col('transaction_type'),
+    'uw_approved_amount': safe_col('uw_approved_amount'),
+    'uw_la_coe': safe_col('uw_la_coe'),
+    'opt_1_delta': '=IF(ISBLANK($G2), "No Forecasa Data",IF($AP2="Acquisition",MAX($AA2,$AB2)-$G2,IF($AP2="Rehab",MAX($AA2,$AB2+AL2)-$G2,"No Terms Given, Forecasa funded ")))',
+    'opt_1_simplified': '=IF(AA2<-10000000,"-10M+",IF(ac2<-1000000, "-10m to -1m",IF(ac2<=-500000,"-1M to -500K",IF(ac2<=-200000,"-500K to -200K",IF(ac2<=-75000,"-200K to -75K",IF(ac2<=-50000,"-75K to -50K",IF(ac2<=-25000,"-50K to -25K",IF(ac2<=-10000,"-25K to -10K",IF(ac2<0,"-10K to 0",IF(ac2<=10000,"0–10K",IF(ac2<=25000,"10K–25K",IF(ac2<=50000,"25K–50K",IF(ac2<=75000,"50K–75K",IF(ac2<=200000,"75K–200K",IF(ac2<=500000,"200K–500K",IF(ac2<1000000,"500K–1M","1M+"))))))))))))))))',
+    'opt_1_percent': '=IF(ISTEXT(AC2), "", MIN(AC2,$G2)/MAX(AC2,$G2))',
     'uw_approved_amount_option_2': safe_col('uw_approved_amount_option_2'),
     'uw_la_coe_option_2': safe_col('uw_la_coe_option_2'),
-    'Delta Opt 2':'=IF(ISBLANK($G2),"No Forecasa Data",IF($AP2="Acquisition",MAX($AF2,$AG2)-$G2,IF($AP2="Rehab",MAX($AF2,$AG2+$AL2)-$G2,"No Terms Given, Forecasa funded ")))',
-    'Opt 2 Simplified':'=IF(ISTEXT(AH2), "",IF(AH2<-10000000,"-10M+",IF(AH2<-1000000, "-10m to -1m",IF(AH2<=-500000,"-1M to -500K",IF(AH2<=-200000,"-500K to -200K",IF(AH2<=-75000,"-200K to -75K",IF(AH2<=-50000,"-75K to -50K",IF(AH2<=-25000,"-50K to -25K",IF(AH2<=-10000,"-25K to -10K",IF(AH2<0,"-10K to 0",IF(AH2<=10000,"0–10K",IF(AH2<=25000,"10K–25K",IF(AH2<=50000,"25K–50K",IF(AH2<=75000,"50K–75K",IF(AH2<=200000,"75K–200K",IF(AH2<=500000,"200K–500K",IF(AH2<=1000000,"500K–1M","1M+")))))))))))))))))',
-    'Opt 2 Percent':'=IF(ISTEXT(AH2), "", MIN(AH2,$G2)/MAX(AH2,$G2))',
-    'LACOE Approved': safe_col('lacoe_approved'),
-    'Holdback': safe_col('holdback'),
-    'Holdback Approved': safe_col('holdback_approved'),
+    'delta_opt_2': '=IF(ISBLANK($G2),"No Forecasa Data",IF($AP2="Acquisition",MAX($AF2,$AG2)-$G2,IF($AP2="Rehab",MAX($AF2,$AG2+$AL2)-$G2,"No Terms Given, Forecasa funded ")))',
+    'opt_2_simplified': '=IF(ISTEXT(AH2), "",IF(AH2<-10000000,"-10M+",IF(AH2<-1000000, "-10m to -1m",IF(AH2<=-500000,"-1M to -500K",IF(AH2<=-200000,"-500K to -200K",IF(AH2<=-75000,"-200K to -75K",IF(AH2<=-50000,"-75K to -50K",IF(AH2<=-25000,"-50K to -25K",IF(AH2<=-10000,"-25K to -10K",IF(AH2<0,"-10K to 0",IF(AH2<=10000,"0–10K",IF(AH2<=25000,"10K–25K",IF(AH2<=50000,"25K–50K",IF(AH2<=75000,"50K–75K",IF(AH2<=200000,"75K–200K",IF(AH2<=500000,"200K–500K",IF(AH2<=1000000,"500K–1M","1M+")))))))))))))))))',
+    'opt_2_percent': '=IF(ISTEXT(AH2), "", MIN(AH2,$G2)/MAX(AH2,$G2))',
+    'lacoe_approved': safe_col('lacoe_approved'),
+    'holdback': safe_col('holdback'),
+    'holdback_approved': safe_col('holdback_approved'),
     'Relevant Metro': safe_col('Relevant Metro'),
     'Cancellation Reason': safe_col('Cancellation Reason'),
     'Opt1 Purchase/Rehab': safe_col('Opt1 Purchase/Rehab'),
@@ -196,7 +196,6 @@ df_out = pd.DataFrame({
     'Canceled Reason W/ high leverage on LTPP': safe_col('Canceled Reason W/ high leverage on LTPP'),
     'Borrower Source': safe_col('Borrower Source')
 })
-
 
 
 # Normalize strings in all columns
