@@ -3,6 +3,7 @@ import csv
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
+import unicodedata
 
 # API and URL
 key = "IBFP-FDUlIyAnY_mJuzIjg"
@@ -22,17 +23,17 @@ def fetch_transactions(li):
     addressv1 = f'{li["property_address"]}, {li["city"]}, {li["state"]} {li["zip"]}'
     if 'Unit' in addressv1:
         addressv1 = addressv1.replace(' Unit', ', Unit ').strip()
-        print(addressv1)
+        
     if '#' in addressv1:
         addressv1 = addressv1.replace(' #', ', Unit ').strip()
-        print(addressv1)
+        
     if 'apt' in addressv1:
         addressv1 = addressv1.replace(' apt', ', apt ').strip()
-        print(addressv1)
+       
     if 'ste' in addressv1:
         addressv1 = addressv1.replace(' ste', ', ste ').strip()
-        print(addressv1)
-    print(addressv1)
+     
+
     addressv1 = addressv1.strip().title()
     params = {
         "api_key": key,
@@ -51,12 +52,18 @@ def fetch_transactions(li):
     except (requests.exceptions.ReadTimeout, requests.exceptions.RequestException) as e:
         print(f"Request issue for {li.get('Property Address', '<no address>')}: {e}")
         fallback = {**li}
-        for k in ['fc_transaction_id', 'fc_house_id', 'FC Transaction Date', 'FC Maturity Date',
-                  'FC Borrowing Entity', 'FC Lender', 'FC Loan Amount','FC MSA','FC Comp Amount','FC Lender Type','FC Company Id',
-                  'Status','Loan Number','id','Property Address','city','state','zip','County','COE','CF1 Loan Amount',
-                  'CF1 Loan Request','Purchase Price','UW Approved Amount','UW LA COE','LACOE Approved','Holdback','Holdback Approved','Relevant Metro','Cancellation Reason','Opt1 Purchase/Rehab','Opt2 Purchase/Rehab',
-                  'Acquisition LTFV','Acquisition LTC','Acquisition LTCV','Acquisition LTPP','Rehab LTFV','Rehab LTC','Rehab LTCV',
-                  'Rehab LTPP','PP Category','Canceled Reason W/ high leverage','Reason W/ high leverage on LTPP','Borrower Source','UW Approved Amount']:
+        for k in [
+    'fc_transaction_id', 'fc_house_id', 'FC Transaction Date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
+    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
+    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
+    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
+    'Transaction Type', 'Total Cost', 'Transaction Type', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Delta Opt 1',
+    'Opt 1 Simplified', 'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified',
+    'Opt 2 Percent', 'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason',
+    'Opt1 Purchase/Rehab', 'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP',
+    'Rehab LTFV', 'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage',
+    'Canceled Reason W/ high leverage on LTPP', 'Borrower Source'
+]:
             fallback.setdefault(k, '')
         fallback['recorded_date'] = ''
         fallback['Status'] = 'Not Found'
@@ -66,9 +73,9 @@ def fetch_transactions(li):
     results = []
 
     for t in transactions:
-        merged = {**li, **t}
-
+        merged = {**t, **li}
         # Extract lender type and company IDs
+        
         lender_types = []
         company_ids = []
         meta = t.get("transaction_meta", {})
@@ -91,16 +98,23 @@ def fetch_transactions(li):
 
         merged["Status"] = "Found"
         results.append(merged)
+        print(merged)
 
     # Fallback row if no API results
     if not results:
         fallback = {**li}
-        for k in ['fc_transaction_id', 'fc_house_id', 'FC Transaction Date', 'FC Maturity Date',
-                  'FC Borrowing Entity', 'FC Lender', 'FC Loan Amount','FC MSA','FC Comp Amount','FC Lender Type','FC Company Id',
-                  'Status','Loan Number','id','Property Address','city','state','zip','County','COE','CF1 Loan Amount',
-                  'CF1 Loan Request','Purchase Price','UW Approved Amount','UW LA COE','LACOE Approved','Holdback','Holdback Approved','Relevant Metro','Cancellation Reason','Opt1 Purchase/Rehab','Opt2 Purchase/Rehab',
-                  'Acquisition LTFV','Acquisition LTC','Acquisition LTCV','Acquisition LTPP','Rehab LTFV','Rehab LTC','Rehab LTCV',
-                  'Rehab LTPP','PP Category','Canceled Reason W/ high leverage','Reason W/ high leverage on LTPP','Borrower Source','UW Approved Amount']:
+        for k in [
+    'fc_transaction_id', 'fc_house_id', 'FC Transaction Date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
+    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
+    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
+    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
+    'Transaction Type', 'Total Cost', 'Transaction Type', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Delta Opt 1',
+    'Opt 1 Simplified', 'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified',
+    'Opt 2 Percent', 'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason',
+    'Opt1 Purchase/Rehab', 'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP',
+    'Rehab LTFV', 'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage',
+    'Canceled Reason W/ high leverage on LTPP', 'Borrower Source'
+]:
             fallback.setdefault(k, '')
         fallback['recorded_date'] = ''
         fallback['Status'] = 'Not Found'
@@ -121,52 +135,71 @@ csv_name = 'Dead Deal Data Look Up Month.2025.csv'
 # Use pandas for speed
 df = pd.DataFrame(data_array)
 
-# Select & rename columns for CSV
+def safe_col(name):
+    return df.get(name, pd.Series('', index=df.index))
+
 df_out = pd.DataFrame({
-    'fc_transaction_id': df.get('fc_transaction_id', ''),
-    'fc_house_id': df.get('fc_house_id', ''),
-    'FC Transaction Date': df.get('recorded_date', ''),
-    'FC Maturity Date': df.get('mortgage_maturity_date', ''),
-    'FC Borrowing Entity': df.get('grantor', ''),
-    'FC Lender': df.get('grantee', ''),
-    'FC Loan Amount': df.get('amount', ''),
-    'County': df.get('county', ''),
-    'FC MSA': df.get('msa_name', ''),
-    'FC Comp Amount': df.get('amount', ''),
-    'FC Lender Type': df.get('Lender Type', ''),  # ✅ renamed tags
-    'FC Company Id': df.get('Company Id', ''),    # ✅ new field
-    'Status': df.get('Status', ''),            # ✅ found/not found indicator
-    'Loan Number': df.get('loan', ''),
-    'id': df.get('id', ''),
-    'Property Address': df.get('property_address',''),
-    'city': df.get('city',''),
-    'state': df.get('state',''),
-    'zip': df.get('zip',''),
-    'COE':df.get('coe',''),
-    'CF1 Loan Amount': df.get('loan_amount', ''),
-    'CF1 Loan Request':df.get('loan_request',''),
-    'Purchase Price':df.get('purchase_price',''),
-    'UW Approved Amount':df.get('uw_approved_amount',''),
-    'UW LA COE':df.get('uw_la_coe',''),
-    'LACOE Approved':df.get('lacoe_approved'),
-    'Holdback':df.get('holdback'),
-    'Holdback Approved': df.get('holdback_approved'),
-    'Relevant Metro':df.get('Relevant Metro',''),
-    'Cancellation Reason':df.get('Cancellation Reason',''),
-    'Opt1 Purchase/Rehab':df.get('Opt1 Purchase/Rehab',''),
-    'Opt2 Purchase/Rehab':df.get('Opt2 Purchase/Rehab',''),
-    'Acquisition LTFV':df.get('Acquisition LTFV',''),
-    'Acquisition LTC':df.get('Acquisition LTC',''),
-    'Acquisition LTCV':df.get('Acquisition LTCV',''),
-    'Acquisition LTPP':df.get('Acquisition LTPP',''),
-    'Rehab LTFV':df.get('Rehab LTFV',''),
-    'Rehab LTC':df.get('Rehab LTC',''),
-    'Rehab LTCV':df.get('Rehab LTCV',''),
-    'Rehab LTPP':df.get('Rehab LTPP',''),
-    'PP Category':df.get('PP Category',''),
-    'Canceled Reason W/ high leverage':df.get('Canceled Reason W/ high leverage',''),
-    'Canceled Reason W/ high leverage on LTPP':df.get('Canceled Reason W/ high leverage on LTPP',''),
-    'Borrower Source': df.get('Borrower Source','')
+    'fc_transaction_id': safe_col('fc_transaction_id'),
+    'fc_house_id': safe_col('fc_house_id'),
+    'FC Transaction Date': safe_col('recorded_date'),
+    'FC Maturity Date': safe_col('mortgage_maturity_date'),
+    'FC Borrowing Entity': safe_col('grantor'),
+    'FC Lender': safe_col('grantee'),
+    'FC Loan Amount': safe_col('amount'),
+    'County': safe_col('county'),
+    'FC MSA': safe_col('msa_name'),
+    'FC Comp Amount': safe_col('amount'),
+    'FC Est Compt LTC': "k2/I2",
+    'FC Lender Type': safe_col('Lender Type'),
+    'FC Company Id': safe_col('Company Id'),
+    'Status': safe_col('Status'),
+    'Loan Number': safe_col('loan'),
+    'id': safe_col('id'),
+    'Property Address': safe_col('property_address'),
+    'city': safe_col('city'),
+    'state': safe_col('state'),
+    'zip': safe_col('zip'),
+    'COE': safe_col('coe'),
+    'CF1 Loan Amount': safe_col('loan_amount'),
+    'CF1 Loan Request': safe_col('loan_request'),
+    'Purchase Price': safe_col('purchase_price'),
+    'Transaction Type': safe_col('Transaction Type'),
+    'Total Cost': safe_col('total_cost'),
+    'Transaction Type': safe_col('transaction_type'),
+    'UW Approved Amount option 1': safe_col('uw_approved_amount'),
+    'UW LA COE Amount option 1': safe_col('uw_la_coe'),
+    'Opt 1 Delta':'=IF(ISBLANK(k2),"No Forecasa Data",IF($AL2="Acquisition",MAX($W2,$X2)-k2,IF($AL2="Rehab",MAX($W2,$X2+AH2)-k2,CONCATENATE("No Terms Given, Forecasa funded ",CHAR(10)),"$",k2))))',
+    'Opt 1 Simplified':'=IF(AA2<-10000000,"-10M+",IF(AA2<-1000000, "-10m to -1m",IF(AA2<=-500000,"-1M to -500K",IF(AA2<=-200000,"-500K to -200K",IF(AA2<=-75000,"-200K to -75K",IF(AA2<=-50000,"-75K to -50K",IF(AA2<=-25000,"-50K to -25K",IF(AA2<=-10000,"-25K to -10K",IF(AA2<0,"-10K to 0",IF(AA2<=10000,"0–10K",IF(AA2<=25000,"10K–25K",IF(AA2<=50000,"25K–50K",IF(AA2<=75000,"50K–75K",IF(AA2<=200000,"75K–200K",IF(AA2<=500000,"200K–500K",IF(AA2<1000000,"500K–1M","1M+"))))))))))))))))',
+    'Opt 1 Percent':'=MIN(AA2,k2)/MAX(AA2,k2)',
+    'uw_approved_amount_option_2': safe_col('uw_approved_amount_option_2'),
+    'uw_la_coe_option_2': safe_col('uw_la_coe_option_2'),
+    'Delta Opt 2':'=IF(ISBLANK(k2),"No Forecasa Data",IF($AL2="Acquisition",MAX($Y2,$Z2)-k2,IF($AL2="Rehab",MAX($Y2,$Z2+$AH2)-k2,CONCATENATE("No Terms Given, Forecasa funded ",CHAR(10),"$",k2))))',
+    'Opt 2 Simplified':'=IF(AD2<-10000000,"-10M+",IF(AD2<-1000000, "-10m to -1m",IF(AD2<=-500000,"-1M to -500K",IF(AD2<=-200000,"-500K to -200K",IF(AD2<=-75000,"-200K to -75K",IF(AD2<=-50000,"-75K to -50K",IF(AD2<=-25000,"-50K to -25K",IF(AD2<=-10000,"-25K to -10K",IF(AD2<0,"-10K to 0",IF(AD2<=10000,"0–10K",IF(AD2<=25000,"10K–25K",IF(AD2<=50000,"25K–50K",IF(AD2<=75000,"50K–75K",IF(AD2<=200000,"75K–200K",IF(AD2<=500000,"200K–500K",IF(AD2<=1000000,"500K–1M","1M+"))))))))))))))))',
+    'Opt 2 Percent':'=MIN(AD2,k2)/MAX(AD2,k2)',
+    'LACOE Approved': safe_col('lacoe_approved'),
+    'Holdback': safe_col('holdback'),
+    'Holdback Approved': safe_col('holdback_approved'),
+    'Relevant Metro': safe_col('Relevant Metro'),
+    'Cancellation Reason': safe_col('Cancellation Reason'),
+    'Opt1 Purchase/Rehab': safe_col('Opt1 Purchase/Rehab'),
+    'Opt2 Purchase/Rehab': safe_col('Opt2 Purchase/Rehab'),
+    'Acquisition LTFV': safe_col('Acquisition LTFV'),
+    'Acquisition LTC': safe_col('Acquisition LTC'),
+    'Acquisition LTCV': safe_col('Acquisition LTCV'),
+    'Acquisition LTPP': safe_col('Acquisition LTPP'),
+    'Rehab LTFV': safe_col('Rehab LTFV'),
+    'Rehab LTC': safe_col('Rehab LTC'),
+    'Rehab LTCV': safe_col('Rehab LTCV'),
+    'Rehab LTPP': safe_col('Rehab LTPP'),
+    'PP Category': safe_col('PP Category'),
+    'Canceled Reason W/ high leverage': safe_col('Canceled Reason W/ high leverage'),
+    'Canceled Reason W/ high leverage on LTPP': safe_col('Canceled Reason W/ high leverage on LTPP'),
+    'Borrower Source': safe_col('Borrower Source')
 })
 
-df_out.to_csv(csv_name, index=False)
+
+
+# Normalize strings in all columns
+df_out = df_out.apply(lambda col: col.map(lambda x: unicodedata.normalize('NFKD', str(x)) if isinstance(x, str) else x))
+
+
