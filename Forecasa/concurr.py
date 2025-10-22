@@ -149,7 +149,7 @@ df_out = pd.DataFrame({
     'County': safe_col('county'),
     'FC MSA': safe_col('msa_name'),
     'FC Comp Amount': safe_col('amount'),
-    'FC Est Compt LTC': "k2/I2",
+    'FC Est Compt LTC': "=IF(ISBLANK($G2), "",$G2/$Z2)",
     'FC Lender Type': safe_col('Lender Type'),
     'FC Company Id': safe_col('Company Id'),
     'Status': safe_col('Status'),
@@ -168,14 +168,14 @@ df_out = pd.DataFrame({
     'Transaction Type': safe_col('transaction_type'),
     'UW Approved Amount option 1': safe_col('uw_approved_amount'),
     'UW LA COE Amount option 1': safe_col('uw_la_coe'),
-    'Opt 1 Delta':'=IF(ISBLANK(k2),"No Forecasa Data",IF($AL2="Acquisition",MAX($W2,$X2)-k2,IF($AL2="Rehab",MAX($W2,$X2+AH2)-k2,CONCATENATE("No Terms Given, Forecasa funded ",CHAR(10)),"$",k2))))',
-    'Opt 1 Simplified':'=IF(AA2<-10000000,"-10M+",IF(AA2<-1000000, "-10m to -1m",IF(AA2<=-500000,"-1M to -500K",IF(AA2<=-200000,"-500K to -200K",IF(AA2<=-75000,"-200K to -75K",IF(AA2<=-50000,"-75K to -50K",IF(AA2<=-25000,"-50K to -25K",IF(AA2<=-10000,"-25K to -10K",IF(AA2<0,"-10K to 0",IF(AA2<=10000,"0–10K",IF(AA2<=25000,"10K–25K",IF(AA2<=50000,"25K–50K",IF(AA2<=75000,"50K–75K",IF(AA2<=200000,"75K–200K",IF(AA2<=500000,"200K–500K",IF(AA2<1000000,"500K–1M","1M+"))))))))))))))))',
-    'Opt 1 Percent':'=MIN(AA2,k2)/MAX(AA2,k2)',
+    'Opt 1 Delta':'=IF(ISBLANK($G2), "No Forecasa Data",IF($AP2="Acquisition",MAX($AA2,$AB2)-$G2,IF($AP2="Rehab",MAX($AA2,$AB2+AL2)-$G2,"No Terms Given, Forecasa funded ")))',
+    'Opt 1 Simplified':'=IF(AA2<-10000000,"-10M+",IF(ac2<-1000000, "-10m to -1m",IF(ac2<=-500000,"-1M to -500K",IF(ac2<=-200000,"-500K to -200K",IF(ac2<=-75000,"-200K to -75K",IF(ac2<=-50000,"-75K to -50K",IF(ac2<=-25000,"-50K to -25K",IF(ac2<=-10000,"-25K to -10K",IF(ac2<0,"-10K to 0",IF(ac2<=10000,"0–10K",IF(ac2<=25000,"10K–25K",IF(ac2<=50000,"25K–50K",IF(ac2<=75000,"50K–75K",IF(ac2<=200000,"75K–200K",IF(ac2<=500000,"200K–500K",IF(ac2<1000000,"500K–1M","1M+"))))))))))))))))',
+    'Opt 1 Percent':'=IF(ISTEXT(AC2), "", MIN(AC2,$G2)/MAX(AC2,$G2))',
     'uw_approved_amount_option_2': safe_col('uw_approved_amount_option_2'),
     'uw_la_coe_option_2': safe_col('uw_la_coe_option_2'),
-    'Delta Opt 2':'=IF(ISBLANK(k2),"No Forecasa Data",IF($AL2="Acquisition",MAX($Y2,$Z2)-k2,IF($AL2="Rehab",MAX($Y2,$Z2+$AH2)-k2,CONCATENATE("No Terms Given, Forecasa funded ",CHAR(10),"$",k2))))',
-    'Opt 2 Simplified':'=IF(AD2<-10000000,"-10M+",IF(AD2<-1000000, "-10m to -1m",IF(AD2<=-500000,"-1M to -500K",IF(AD2<=-200000,"-500K to -200K",IF(AD2<=-75000,"-200K to -75K",IF(AD2<=-50000,"-75K to -50K",IF(AD2<=-25000,"-50K to -25K",IF(AD2<=-10000,"-25K to -10K",IF(AD2<0,"-10K to 0",IF(AD2<=10000,"0–10K",IF(AD2<=25000,"10K–25K",IF(AD2<=50000,"25K–50K",IF(AD2<=75000,"50K–75K",IF(AD2<=200000,"75K–200K",IF(AD2<=500000,"200K–500K",IF(AD2<=1000000,"500K–1M","1M+"))))))))))))))))',
-    'Opt 2 Percent':'=MIN(AD2,k2)/MAX(AD2,k2)',
+    'Delta Opt 2':'=IF(ISBLANK($G2),"No Forecasa Data",IF($AP2="Acquisition",MAX($AF2,$AG2)-$G2,IF($AP2="Rehab",MAX($AF2,$AG2+$AL2)-$G2,"No Terms Given, Forecasa funded ")))',
+    'Opt 2 Simplified':'=IF(ISTEXT(AH2), "",IF(AH2<-10000000,"-10M+",IF(AH2<-1000000, "-10m to -1m",IF(AH2<=-500000,"-1M to -500K",IF(AH2<=-200000,"-500K to -200K",IF(AH2<=-75000,"-200K to -75K",IF(AH2<=-50000,"-75K to -50K",IF(AH2<=-25000,"-50K to -25K",IF(AH2<=-10000,"-25K to -10K",IF(AH2<0,"-10K to 0",IF(AH2<=10000,"0–10K",IF(AH2<=25000,"10K–25K",IF(AH2<=50000,"25K–50K",IF(AH2<=75000,"50K–75K",IF(AH2<=200000,"75K–200K",IF(AH2<=500000,"200K–500K",IF(AH2<=1000000,"500K–1M","1M+")))))))))))))))))',
+    'Opt 2 Percent':'=IF(ISTEXT(AH2), "", MIN(AH2,$G2)/MAX(AH2,$G2))',
     'LACOE Approved': safe_col('lacoe_approved'),
     'Holdback': safe_col('holdback'),
     'Holdback Approved': safe_col('holdback_approved'),
@@ -201,5 +201,7 @@ df_out = pd.DataFrame({
 
 # Normalize strings in all columns
 df_out = df_out.apply(lambda col: col.map(lambda x: unicodedata.normalize('NFKD', str(x)) if isinstance(x, str) else x))
+df_out.to_csv(csv_name, index=False, encoding='utf-8-sig')
+
 
 
