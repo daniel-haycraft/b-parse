@@ -4,23 +4,20 @@ from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 import unicodedata
+
 # API and URL
 key = "IBFP-FDUlIyAnY_mJuzIjg"
-url = "https://webapp.forecasa.com/api/v1/properties"
-
+url = "https://webapp.forecasa.com/api/v1/properties/normalize_address"
 
 # Load CSV
-with open('Dead Deal Data Look Up Month.2025.csv', "r", encoding="cp437") as f:
+with open('Dead Deal Data.csv', "r", encoding="cp437") as f:
     my_dict = csv.DictReader(f)
     lister = list(my_dict)
 
 def fetch_transactions(li):
     # Subtract 30 days from Application Date
-    date1 = datetime.strptime(li["coe"], "%m/%d/%Y") - timedelta(days=30)
-    date2 = datetime.strptime(li["coe"], "%m/%d/%Y") + timedelta(days=60)
-    date1_str = date1.strftime("%m/%d/%Y")
-    date2_str = date2.strftime("%m/%d/%Y")
     addressv1 = f'{li["property_address"]}, {li["city"]}, {li["state"]} {li["zip"]}'
+
     if 'Unit' in addressv1:
         addressv1 = addressv1.replace(' Unit', ', Unit ').strip()
         
@@ -37,23 +34,17 @@ def fetch_transactions(li):
     addressv1 = addressv1.strip().title()
     params = {
         "api_key": key,
-        "page": 1,
-        "page_size": 1000,
-        'q[last_mortgage_date_gteq]': date1_str,
-        'q[last_mortgage_date_lteq]': date2_str,
-        "search": addressv1,
+        "address": addressv1,
     }
 
     try:
         response = requests.get(url, params=params, timeout=30)
         response.raise_for_status()
     except (requests.exceptions.ReadTimeout, requests.exceptions.RequestException) as e:
-        print(f"Request issue for {li.get('Property Address', '<no address>')}: {e}")
+        print(f"Request issue for {addressv1}, : {e}")
         fallback = {**li}
         for k in [
-    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
+    'Full Address','Loan Number', 'id', 'Property Address', 'city',
     'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
     'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
     'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
@@ -67,22 +58,22 @@ def fetch_transactions(li):
         fallback['Status'] = 'Not Found'
         return [fallback]
 
-    properites = response.json().get('properites', [])
+    address = response.json()
     results = []
+    # Merge each API result with original CSV row
+    merged = {**address, **li}  # CSV row + API result
+    merged["Status"] = "Found"
+    results.append(merged)
+    print(merged)
+        
 
-    for t in properites:
-        merged = {**t, **li}
-        print(6516)
-        merged["Status"] = "Found"
-        results.append(merged)
+        
 
     # Fallback row if no API results
     if not results:
         fallback = {**li}
         for k in [
-    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
+    'Full Address','Loan Number', 'id', 'Property Address', 'city',
     'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
     'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
     'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
@@ -92,6 +83,7 @@ def fetch_transactions(li):
     'Borrower Source'
 ]:
             fallback.setdefault(k, '')
+        fallback['Status'] = 'Not Found'
         return [fallback]
 
     return results
@@ -104,7 +96,7 @@ with ThreadPoolExecutor(max_workers=5) as executor:
         data_array.extend(future.result() or [])
 
 # Prepare CSV
-csv_name = 'Report completed.csv'
+csv_name = 'dead deal awaiting for transactions.csv'
 
 # Use pandas for speed
 df = pd.DataFrame(data_array)
@@ -113,19 +105,6 @@ def safe_col(name):
     return df.get(name, pd.Series('', index=df.index))
 
 df_out = pd.DataFrame({
-    'fc_transaction_id': safe_col('fc_transaction_id'),
-    'fc_house_id': safe_col('fc_house_id'),
-    'recorded_date': safe_col('recorded_date'),
-    'mortgage_maturity_date': safe_col('mortgage_maturity_date'),
-    'grantor': safe_col('grantor'),
-    'grantee': safe_col('grantee'),
-    'amount': safe_col('amount'),
-    'county': safe_col('county'),
-    'msa_name': safe_col('msa_name'),
-    'comp_amount': safe_col('amount'),
-    'est_compt_ltc': '=IF(ISBLANK($G2), "",$G2/$Z2)',
-    'Lender Type': safe_col('Lender Type'),
-    'Company Id': safe_col('Company Id'),
     'Status': safe_col('Status'),
     'loan': safe_col('loan'),
     'id': safe_col('∩╗┐id'),
@@ -168,11 +147,15 @@ df_out = pd.DataFrame({
     'PP Category': safe_col('PP Category'),
     'Canceled Reason W/ high leverage': safe_col('Canceled Reason W/ high leverage'),
     'Canceled Reason W/ high leverage on LTPP': safe_col('Canceled Reason W/ high leverage on LTPP'),
-    'Borrower Source': safe_col('Borrower Source')
-})
+    'Borrower Source': safe_col('Borrower Source'),
+    'formatted_address': safe_col('formatted_address'),
 
+})
 
 
 # Normalize strings in all columns
 df_out = df_out.apply(lambda col: col.map(lambda x: unicodedata.normalize('NFKD', str(x)) if isinstance(x, str) else x))
 df_out.to_csv(csv_name, index=False, encoding='utf-8-sig')
+
+
+
