@@ -17,9 +17,8 @@ with open('dead deal awaiting for transactions.csv', "r", encoding="cp437") as f
 def fetch_transactions(li):
     # Subtract 30 days from Application Date
     date1 = datetime.strptime(li["coe"], "%m/%d/%Y") - timedelta(days=30)
-    date2 = datetime.strptime(li["coe"], "%m/%d/%Y") + timedelta(days=60)
     date1_str = date1.strftime("%m/%d/%Y")
-    date2_str = date2.strftime("%m/%d/%Y")
+    date2_str = datetime.today().strftime("%m/%d/%Y")
     addressv1 = li["formatted_address"]
     if addressv1 != None or addressv1 != "":
         addressv1 = li["formatted_address"]
@@ -160,7 +159,7 @@ df_out = pd.DataFrame({
     'Company Id': safe_col('Company Id'),
     'Status': safe_col('Status'),
     'loan': safe_col('loan'),
-    'id': safe_col('∩╗┐id'),
+    'id': safe_col('id'),
     'property_address': safe_col('property_address'),
     'city': safe_col('city'),
     'state': safe_col('state'),
@@ -175,7 +174,7 @@ df_out = pd.DataFrame({
     'uw_approved_amount': safe_col('uw_approved_amount'),
     'uw_la_coe': safe_col('uw_la_coe'),
     'opt_1_delta': '=IF(ISBLANK($G2), "No Forecasa Data",IF($AP2="Acquisition",MAX($AA2,$AB2)-$G2,IF($AP2="Rehab",MAX($AA2,$AB2+AL2)-$G2,"No Terms Given, Forecasa funded ")))',
-    'opt_1_simplified': '=IF(AA2<-10000000,"-10M+",IF(ac2<-1000000, "-10m to -1m",IF(ac2<=-500000,"-1M to -500K",IF(ac2<=-200000,"-500K to -200K",IF(ac2<=-75000,"-200K to -75K",IF(ac2<=-50000,"-75K to -50K",IF(ac2<=-25000,"-50K to -25K",IF(ac2<=-10000,"-25K to -10K",IF(ac2<0,"-10K to 0",IF(ac2<=10000,"0–10K",IF(ac2<=25000,"10K–25K",IF(ac2<=50000,"25K–50K",IF(ac2<=75000,"50K–75K",IF(ac2<=200000,"75K–200K",IF(ac2<=500000,"200K–500K",IF(ac2<1000000,"500K–1M","1M+"))))))))))))))))',
+    'opt_1_simplified': '==IF(ISTEXT(AH2), "",IF(AA2<-10000000,"-10M+",IF(AC2<-1000000,"-10m to -1m",IF(AC2<=-500000,"-1M to -500K",IF(AC2<=-200000,"-500K to -200K",IF(AC2<=-75000,"-200K to -75K",IF(AC2<=-50000,"-75K to -50K",IF(AC2<=-25000,"-50K to -25K",IF(AC2<=-10000,"-25K to -10K",IF(AC2<0,"-10K to 0",IF(AC2<=10000,"0–10K",IF(AC2<=25000,"10K–25K",IF(AC2<=50000,"25K–50K",IF(AC2<=75000,"50K–75K",IF(AC2<=200000,"75K–200K",IF(AC2<=500000,"200K–500K",IF(AC2<1000000,"500K–1M","1M+")))))))))))))))))',
     'opt_1_percent': '=IF(ISTEXT(AC2), "", MIN(AC2,$G2)/MAX(AC2,$G2))',
     'uw_approved_amount_option_2': safe_col('uw_approved_amount_option_2'),
     'uw_la_coe_option_2': safe_col('uw_la_coe_option_2'),
