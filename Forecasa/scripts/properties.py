@@ -19,9 +19,10 @@ def pretty_print_dict(data):
     formatted = json.dumps(data, indent=4, ensure_ascii=False)
     syntax = Syntax(formatted, "json", theme="monokai", line_numbers=False)
     console.print(syntax)
-
+    
+loadcsv='month'
 # Load CSV
-with open('Dead Deal Data Look Up Month.2025.csv', "r", encoding="cp437") as f:
+with open(f'Dead Deal Data Look Up {loadcsv}.2025.csv', "r", encoding="cp437") as f:
     my_dict = csv.DictReader(f)
     lister = list(my_dict)
 
@@ -120,7 +121,7 @@ with ThreadPoolExecutor(max_workers=5) as executor:
         data_array.extend(future.result() or [])
 
 # Prepare CSV
-csv_name = 'Report completed.csv'
+csv_name = f'Report completed {loadcsv}.csv'
 
 # Use pandas for speed
 df = pd.DataFrame(data_array)

@@ -8,9 +8,9 @@ import unicodedata
 # API and URL
 key = "IBFP-FDUlIyAnY_mJuzIjg"
 url = "https://webapp.forecasa.com/api/v1/transactions"
-
+loadcsv='month'
 # Load CSV
-with open('dead deal awaiting for transactions.csv', "r", encoding="cp437") as f:
+with open(f'dead deal awaiting for transactions.csv', "r", encoding="cp437") as f:
     my_dict = csv.DictReader(f)
     lister = list(my_dict)
 
@@ -19,27 +19,23 @@ def fetch_transactions(li):
     date1 = datetime.strptime(li["coe"], "%m/%d/%Y") - timedelta(days=30)
     date1_str = date1.strftime("%m/%d/%Y")
     date2_str = datetime.today().strftime("%m/%d/%Y")
-    addressv1 = li["formatted_address"]
-    if addressv1 != None or addressv1 != "":
-        addressv1 = li["formatted_address"]
-    else:
+
+    addressv1 = li.get("formatted_address") or ""
+    if not addressv1.strip():
         addressv1 = f'{li["property_address"]}, {li["city"]}, {li["state"]} {li["zip"]}'
 
-        if 'Unit' in addressv1:
-            addressv1 = addressv1.replace(' Unit', ', Unit ').strip()
-            addressv1 = addressv1.strip().title()
-            
-        if '#' in addressv1:
-            addressv1 = addressv1.replace(' #', ', Unit ').strip()
-            addressv1 = addressv1.strip().title()
-            
-        if 'apt' in addressv1:
-            addressv1 = addressv1.replace(' apt', ', apt ').strip()
-            addressv1 = addressv1.strip().title()
-        
-        if 'ste' in addressv1:
-            addressv1 = addressv1.replace(' ste', ', ste ').strip()
-            addressv1 = addressv1.strip().title()
+    # Normalize and clean address formatting
+    replacements = {
+        ' Unit': ', Unit ',
+        ' #': ', Unit ',
+        ' apt': ', apt ',
+        ' ste': ', ste ',
+    }
+    for old, new in replacements.items():
+        if old in addressv1:
+            addressv1 = addressv1.replace(old, new)
+    addressv1 = addressv1.strip().title()
+
     params = {
         "api_key": key,
         "page": 1,
@@ -56,39 +52,25 @@ def fetch_transactions(li):
         response.raise_for_status()
     except (requests.exceptions.ReadTimeout, requests.exceptions.RequestException) as e:
         print(f"Request issue for {li.get('Property Address', '<no address>')}: {e}")
-        fallback = {**li}
-        for k in [
-    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
-    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
-    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
-    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
-    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
-    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
-    'Borrower Source'
-]:
-            fallback.setdefault(k, '')
-        fallback['recorded_date'] = ''
-        fallback['Status'] = 'Not Found'
-        return [fallback]
+        return [fallback_row(li, status='Not Found')]
 
     transactions = response.json().get('transactions', [])
     results = []
 
     for t in transactions:
         merged = {**t, **li}
-        # Extract lender type and company IDs
-        
+
         lender_types = []
         company_ids = []
+
         meta = t.get("transaction_meta", {})
         for group in ["companies", "cross_companies"]:
             for comp in meta.get(group, []):
-                lender_types.extend(comp.get("tags", []))
-                if comp.get("company_id"):
-                    company_ids.append(str(comp["company_id"]))
+                # ✅ Fixed: safely handle NoneType for tags
+                lender_types.extend(comp.get("tags") or [])
+                company_id = comp.get("company_id")
+                if company_id:
+                    company_ids.append(str(company_id))
 
         merged["Lender Type"] = ", ".join(sorted(set(lender_types))) if lender_types else ""
         merged["Company Id"] = ", ".join(sorted(set(company_ids))) if company_ids else ""
@@ -105,27 +87,29 @@ def fetch_transactions(li):
         results.append(merged)
         print(merged)
 
-    # Fallback row if no API results
     if not results:
-        fallback = {**li}
-        for k in [
-    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
-    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
-    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
-    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
-    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
-    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
-    'Borrower Source'
-]:
-            fallback.setdefault(k, '')
-        fallback['recorded_date'] = ''
-        fallback['Status'] = 'Not Found'
-        return [fallback]
+        return [fallback_row(li, status='Not Found')]
 
     return results
+
+def fallback_row(li, status='Not Found'):
+    fallback = {**li}
+    for k in [
+        'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
+        'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
+        'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
+        'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
+        'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
+        'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
+        'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
+        'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
+        'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
+        'Borrower Source'
+    ]:
+        fallback.setdefault(k, '')
+    fallback['recorded_date'] = ''
+    fallback['Status'] = status
+    return fallback
 
 # Run all requests in parallel
 data_array = []
@@ -135,9 +119,8 @@ with ThreadPoolExecutor(max_workers=5) as executor:
         data_array.extend(future.result() or [])
 
 # Prepare CSV
-csv_name = 'Dead Deal Data Look Up Month.2025.csv'
+csv_name = f'Dead Deal Data Look Up {loadcsv}.2025.csv'
 
-# Use pandas for speed
 df = pd.DataFrame(data_array)
 
 def safe_col(name):
@@ -203,10 +186,6 @@ df_out = pd.DataFrame({
     'formatted_address': safe_col('formatted_address'),
 })
 
-
-# Normalize strings in all columns
+# Normalize all strings to avoid encoding issues
 df_out = df_out.apply(lambda col: col.map(lambda x: unicodedata.normalize('NFKD', str(x)) if isinstance(x, str) else x))
 df_out.to_csv(csv_name, index=False, encoding='utf-8-sig')
-
-
-
