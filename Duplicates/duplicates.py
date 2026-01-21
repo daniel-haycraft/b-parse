@@ -98,27 +98,36 @@ for new in new_contacts:
 
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
-        fieldnames = ["Record ID",'Last Name','First Name',"Full Name",'Street Address', 'State', 
-        'City', 'Zip','Phone Number','Mobile Phone','Email', 'Notes','fc_transaction_id','Associated Deals']
+        fieldnames = ["Record ID",'Last Name','First Name',"Full Name",'Phone Number','Mobile Phone','Email', 'Notes','fc_transaction_id','Associated Deals',"Market Sizing?", "MS FC Maturity Date", 
+                      "MS Lender", "MS Address", "MS State", "MS City", "MS Zip Code","MS County", "MS MSA","Company", 'Lead Source', 'Original Source', 'Sales lead Source 2.0']
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
             print(n)
             wright.writerow({
             "Record ID": n["Record ID"], 
-            "fc_transaction_id": n["fc_transaction_id"], 
+            "fc_transaction_id": n["fc_transaction_id"],
+            "MS FC Maturity Date":n["MS FC Maturity Date"],
+            "Company": n["Company"],
             "First Name": n["First Name"],
             "Last Name": n["Last Name"],
             "Full Name": n['Full Name'],
-            "Street Address": n["Street Address"],
-            "State": n["State"],
-            "City": n["City"],
-            "Zip": n["Zip Code"],
+            "MS Lender": n["MS Lender"],
+            "MS Address": n["MS Address"],
+            "MS State": n["MS State"],
+            "MS City": n["MS City"],
+            "MS Zip Code": n["MS Zip Code"],
+            "MS County": n["MS County"],
+            "MS MSA": n["MS MSA"],
             "Phone Number": n["Phone Number"],
             "Mobile Phone": n["Mobile Phone"],
             "Email": n["Email"],
             "Associated Deals": n["Associated Deals"],
             "Notes": n["Notes"],
+            "Lead Source": "Market Sizing",
+            "Sales lead Source 2.0": "Elementix",
+            "Original Source": "Email Marketing",
+            "Market Sizing?": "Yes",
             })
 
 witch_queen()

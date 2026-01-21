@@ -74,7 +74,8 @@ with open('forecasa.csv',"r", encoding='latin1') as f:
 
 def process_companies(lister, output_file):
     with open(output_file, "w", encoding="utf-8", newline="") as f:
-        fieldnames = ["Error", "fc_transaction_id", "Company", "State", "Property Address", "City", "Zip", "Full Name", "First Name", "Last Name", "Notes"]
+        fieldnames = ["Error", "fc_transaction_id", "Company", "MS State", "MS Address", "MS City", "MS Zip Code", "Full Name",
+                       "First Name", "Last Name", "Notes", "MS Lender", "MS FC Maturity Date", "MS County", "MS MSA"]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -111,13 +112,17 @@ def process_company_entry(entry, writer,note):
                 "Error": err,
                 "Company": company_name.title(),
                 "fc_transaction_id": entry.get("id", ""),
-                "Property Address": principal.get("AddressLine1", "").title(),
-                "City": principal.get("City", "").title(),
-                "State": principal.get("StateProvince", "").title(),
-                "Zip": principal.get("PostalCode", "").title(),
+                "MS FC Maturity Date": entry.get("upcoming_maturities", ""),
+                "MS Address": principal.get("AddressLine1", "").title(),
+                "MS City": principal.get("City", "").title(),
+                "MS State": principal.get("StateProvince", "").title(),
+                "MS Zip Code": principal.get("PostalCode", "").title(),
+                "MS Lender": entry.get("last_lender_used", "").title(),
                 "Full Name": principal.get("PrincipalName", "").title(),
                 "First Name": principal.get("FirstName", "").title(),
                 "Last Name": principal.get("LastName", "").title(),
+                "MS County": principal.get("last_county", "").title(),
+                "MS MSA": principal.get("last_msa", "").title(),
                 "Notes": note
             })
         break
