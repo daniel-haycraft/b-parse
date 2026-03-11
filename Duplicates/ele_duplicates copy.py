@@ -99,7 +99,7 @@ for new in new_contacts:
 def witch_queen():
     with open('output.csv','w',encoding="cp437",newline='\n') as f:
         fieldnames = ["Record ID",'Last Name','First Name',"Full Name",'Phone Number','Mobile Phone','Email', 'Notes','fc_transaction_id','Associated Deals',"Market Sizing?", "MS FC Maturity Date", 
-                      "MS Lender", "MS State", 'Lead Source', 'Original Source', 'Sales lead Source 2.0', "Contact Elementix Link", "LinkedIn Profile", "Instagram Profile", "Loans", "Volume"]
+                      "MS Lender", "MS State", 'Lead Source', 'Original Source', 'Sales lead Source 2.0', "Contact Elementix Link", "LinkedIn Profile", "Instagram Profile"]
         wright = csv.DictWriter(f, fieldnames=fieldnames)
         wright.writeheader()
         for n in final_contact:
@@ -117,15 +117,13 @@ def witch_queen():
             "Email": n["Email 1"],
             "Associated Deals": n["Associated Deals"],
             "Notes": n["Bio"],
-            "Loans": n["Loans"],
-            "Volume": n["Volume"],
             "Lead Source": "Market Sizing",
             "Sales lead Source 2.0": "Elementix",
             "Original Source": "Email Marketing",
             "Market Sizing?": "Yes",
-            "Contact Elementix Link": n.get("Contact Elementix Link",""),
-            "LinkedIn Profile": n.get("LinkedIn",""),
-            "Instagram Profile": n.get("Instagram",""),
+            "Contact Elementix Link": n["Elementix Link"],
+            "LinkedIn Profile": n["LinkedIn"],
+            "Instagram Profile": n["Instagram"],
             })
 
 witch_queen()

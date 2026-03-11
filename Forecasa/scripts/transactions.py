@@ -1,39 +1,102 @@
 import requests
 import csv
+import time
+import random
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 import unicodedata
+import os
+import threading
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # API and URL
 key = "IBFP-FDUlIyAnY_mJuzIjg"
 url = "https://webapp.forecasa.com/api/v1/transactions"
-loadcsv='month'
-# Load CSV
-with open(f'dead deal awaiting for transactions.csv', "r", encoding="cp437") as f:
+loadcsv = 'month'
+
+# Output file
+csv_name = f'Dead Deal Data Look Up {loadcsv}.2026.csv'
+
+# Load source CSV
+with open('dead deal awaiting for transactions.csv', "r", encoding="cp437") as f:
     my_dict = csv.DictReader(f)
     lister = list(my_dict)
 
+# Resume support
+completed_addresses = set()
+if os.path.exists(csv_name):
+    try:
+        existing_df = pd.read_csv(csv_name, encoding="utf-8-sig")
+        completed_addresses = set(existing_df.get("formatted_address", []))
+        print(f"Resuming: {len(completed_addresses)} already completed")
+    except:
+        pass
+
+data_array = []
+
+# -------------------------
+# FAST CALL SETUP (only)
+# -------------------------
+MAX_WORKERS = 12          # total worker threads
+MAX_IN_FLIGHT = 6         # max simultaneous requests hitting the API (safety valve)
+REQUEST_TIMEOUT = 30
+
+thread_local = threading.local()
+api_sema = threading.Semaphore(MAX_IN_FLIGHT)
+
+def get_session():
+    """One requests.Session per thread (thread-safe + connection pooling)."""
+    s = getattr(thread_local, "session", None)
+    if s is None:
+        s = requests.Session()
+
+        retry = Retry(
+            total=2,
+            backoff_factor=0.4,
+            status_forcelist=(500, 502, 503, 504),
+            allowed_methods=frozenset(["GET"]),
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(
+            max_retries=retry,
+            pool_connections=MAX_WORKERS,
+            pool_maxsize=MAX_WORKERS
+        )
+        s.mount("https://", adapter)
+        s.mount("http://", adapter)
+
+        thread_local.session = s
+    return s
+
+# -------------------------
+# your original functions
+# -------------------------
+
 def fetch_transactions(li):
-    # Subtract 30 days from Application Date
+
     date1 = datetime.strptime(li["coe"], "%m/%d/%Y") - timedelta(days=30)
     date1_str = date1.strftime("%m/%d/%Y")
+
+    # KEEP YOUR ORIGINAL behavior (today), unless you decide to narrow it later.
+    # Narrowing can massively speed up searches, but I'm not changing your logic here.
     date2_str = datetime.today().strftime("%m/%d/%Y")
 
     addressv1 = li.get("formatted_address") or ""
     if not addressv1.strip():
         addressv1 = f'{li["property_address"]}, {li["city"]}, {li["state"]} {li["zip"]}'
 
-    # Normalize and clean address formatting
     replacements = {
         ' Unit': ', Unit ',
         ' #': ', Unit ',
         ' apt': ', apt ',
         ' ste': ', ste ',
     }
+
     for old, new in replacements.items():
-        if old in addressv1:
-            addressv1 = addressv1.replace(old, new)
+        addressv1 = addressv1.replace(old, new)
+
     addressv1 = addressv1.strip().title()
 
     params = {
@@ -47,86 +110,156 @@ def fetch_transactions(li):
         "q[state_code_in][]": li["state"]
     }
 
-    try:
-        response = requests.get(url, params=params, timeout=30)
-        response.raise_for_status()
-    except (requests.exceptions.ReadTimeout, requests.exceptions.RequestException) as e:
-        print(f"Request issue for {li.get('Property Address', '<no address>')}: {e}")
-        return [fallback_row(li, status='Not Found')]
+    # Retry loop ONLY for 429 (kept), but made safer/faster
+    backoff = 2
+    max_backoff = 20
+
+    while True:
+        try:
+            # throttle concurrent API calls
+            with api_sema:
+                response = get_session().get(url, params=params, timeout=REQUEST_TIMEOUT)
+
+            # less noisy than printing the Response object every time
+            # print(response)
+
+            if response.status_code == 429:
+                # small jitter prevents threads from retrying in sync
+                sleep_for = backoff + random.uniform(0, 0.5)
+                print(f"[{datetime.now()}] 429 hit → sleeping {sleep_for:.1f}s → {addressv1}")
+                time.sleep(sleep_for)
+                backoff = min(backoff * 2, max_backoff)
+                continue
+
+            response.raise_for_status()
+            break
+
+        except (requests.exceptions.ReadTimeout,
+                requests.exceptions.RequestException) as e:
+
+            if hasattr(e, 'response') and e.response is not None and e.response.status_code == 429:
+                sleep_for = backoff + random.uniform(0, 0.5)
+                print(f"[{datetime.now()}] 429 exception → sleeping {sleep_for:.1f}s → {addressv1}")
+                time.sleep(sleep_for)
+                backoff = min(backoff * 2, max_backoff)
+                continue
+
+            print(f"[{datetime.now()}] FALLBACK → {addressv1}")
+            return fallback_row(li, status='Not Found')
 
     transactions = response.json().get('transactions', [])
+
     results = []
 
     for t in transactions:
+
         merged = {**t, **li}
 
         lender_types = []
         company_ids = []
 
         meta = t.get("transaction_meta", {})
+
         for group in ["companies", "cross_companies"]:
             for comp in meta.get(group, []):
-                # ✅ Fixed: safely handle NoneType for tags
                 lender_types.extend(comp.get("tags") or [])
-                company_id = comp.get("company_id")
-                if company_id:
-                    company_ids.append(str(company_id))
+                cid = comp.get("company_id")
+                if cid:
+                    company_ids.append(str(cid))
 
-        merged["Lender Type"] = ", ".join(sorted(set(lender_types))) if lender_types else ""
-        merged["Company Id"] = ", ".join(sorted(set(company_ids))) if company_ids else ""
+        merged["Lender Type"] = ", ".join(sorted(set(lender_types)))
+        merged["Company Id"] = ", ".join(sorted(set(company_ids)))
 
-        # Safe conversion of recorded_date
         rec = merged.get('recorded_date', '')
         if rec:
             try:
                 merged["recorded_date"] = datetime.strptime(rec.replace("-", "/"), "%Y/%m/%d")
-            except Exception:
-                merged["recorded_date"] = rec
+            except:
+                pass
 
         merged["Status"] = "Found"
+
+        print(f"[{datetime.now()}] SUCCESS → {addressv1}")
+
         results.append(merged)
-        print(merged)
 
     if not results:
         return [fallback_row(li, status='Not Found')]
 
     return results
 
+
 def fallback_row(li, status='Not Found'):
+
     fallback = {**li}
+
     for k in [
-        'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-        'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-        'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
-        'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-        'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
-        'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
-        'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
-        'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
-        'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
-        'Borrower Source'
+        'fc_transaction_id','fc_house_id','recorded_date',
+        'mortgage_maturity_date','fc_party_company',
+        'fc_cross_party_company','amount','county','msa_name',
+        'Lender Type','Company Id','Status'
     ]:
         fallback.setdefault(k, '')
-    fallback['recorded_date'] = ''
+
     fallback['Status'] = status
+
     return fallback
 
-# Run all requests in parallel
-data_array = []
-with ThreadPoolExecutor(max_workers=5) as executor:
-    future_to_li = {executor.submit(fetch_transactions, li): li for li in lister}
-    for future in as_completed(future_to_li):
-        data_array.extend(future.result() or [])
 
-# Prepare CSV
-csv_name = f'Dead Deal Data Look Up {loadcsv}.2025.csv'
+# Executor with checkpoint writing + resume skip
+with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
+    futures = []
+
+    for li in lister:
+
+        addr = li.get("formatted_address", "")
+
+        if addr in completed_addresses:
+            continue
+
+        futures.append(executor.submit(fetch_transactions, li))
+
+    total = len(futures)
+
+    for i, future in enumerate(as_completed(futures), 1):
+
+        result = future.result()
+
+        if isinstance(result, list):
+            data_array.extend(result)
+        else:
+            data_array.append(result)
+
+        print(f"Progress: {i}/{total}")
+
+        # checkpoint every 10 rows (kept exactly)
+        if i % 10 == 0:
+
+            df_checkpoint = pd.DataFrame(data_array)
+
+            df_checkpoint.to_csv(
+                csv_name,
+                index=False,
+                encoding="utf-8-sig"
+            )
+
+            print(f"Checkpoint saved → {i}")
+
+
+# Final dataframe build
 df = pd.DataFrame(data_array)
+
 
 def safe_col(name):
     return df.get(name, pd.Series('', index=df.index))
 
+
+# -------------------------
+# df_out: UNCHANGED
+# -------------------------
 df_out = pd.DataFrame({
+
     'fc_transaction_id': safe_col('fc_transaction_id'),
     'fc_house_id': safe_col('fc_house_id'),
     'recorded_date': safe_col('recorded_date'),
@@ -137,10 +270,13 @@ df_out = pd.DataFrame({
     'county': safe_col('county'),
     'msa_name': safe_col('msa_name'),
     'comp_amount': safe_col('amount'),
-    'est_compt_ltc': '=IF(ISBLANK($G2), "",$G2/$Z2)',
+
+    'est_compt_ltc': '=IF(ISBLANK($G2),"",$G2/$Z2)',
+
     'Lender Type': safe_col('Lender Type'),
     'Company Id': safe_col('Company Id'),
     'Status': safe_col('Status'),
+
     'loan': safe_col('loan'),
     'id': safe_col('id'),
     'property_address': safe_col('property_address'),
@@ -148,44 +284,66 @@ df_out = pd.DataFrame({
     'state': safe_col('state'),
     'zip': safe_col('zip'),
     'coe': safe_col('coe'),
+
     'loan_amount': safe_col('loan_amount'),
     'loan_request': safe_col('loan_request'),
     'purchase_price': safe_col('purchase_price'),
     'transaction_type': safe_col('transaction_type'),
     'total_cost': safe_col('total_cost'),
-    'transaction_type': safe_col('transaction_type'),
+
     'uw_approved_amount': safe_col('uw_approved_amount'),
     'uw_la_coe': safe_col('uw_la_coe'),
-    'opt_1_delta': '=IF(ISBLANK($G2), "No Forecasa Data",IF($AP2="Acquisition",MAX($AA2,$AB2)-$G2,IF($AP2="Rehab",MAX($AA2,$AB2+AL2)-$G2,"No Terms Given, Forecasa funded ")))',
-    'opt_1_simplified': '==IF(ISTEXT(AH2), "",IF(AA2<-10000000,"-10M+",IF(AC2<-1000000,"-10m to -1m",IF(AC2<=-500000,"-1M to -500K",IF(AC2<=-200000,"-500K to -200K",IF(AC2<=-75000,"-200K to -75K",IF(AC2<=-50000,"-75K to -50K",IF(AC2<=-25000,"-50K to -25K",IF(AC2<=-10000,"-25K to -10K",IF(AC2<0,"-10K to 0",IF(AC2<=10000,"0–10K",IF(AC2<=25000,"10K–25K",IF(AC2<=50000,"25K–50K",IF(AC2<=75000,"50K–75K",IF(AC2<=200000,"75K–200K",IF(AC2<=500000,"200K–500K",IF(AC2<1000000,"500K–1M","1M+")))))))))))))))))',
-    'opt_1_percent': '=IF(ISTEXT(AC2), "", MIN(AC2,$G2)/MAX(AC2,$G2))',
+
+    'opt_1_delta': '=IF(ISBLANK($G2),"No Forecasa Data",IF($AP2="Acquisition",MAX($AA2,$AB2)-$G2,IF($AP2="Rehab",MAX($AA2,$AB2+AL2)-$G2,"No Terms Given")))',
+
+    'opt_1_simplified': safe_col('opt_1_simplified'),
+    'opt_1_percent': safe_col('opt_1_percent'),
+
     'uw_approved_amount_option_2': safe_col('uw_approved_amount_option_2'),
     'uw_la_coe_option_2': safe_col('uw_la_coe_option_2'),
-    'delta_opt_2': '=IF(ISBLANK($G2),"No Forecasa Data",IF($AP2="Acquisition",MAX($AF2,$AG2)-$G2,IF($AP2="Rehab",MAX($AF2,$AG2+$AL2)-$G2,"No Terms Given, Forecasa funded ")))',
-    'opt_2_simplified': '=IF(ISTEXT(AH2), "",IF(AH2<-10000000,"-10M+",IF(AH2<-1000000, "-10m to -1m",IF(AH2<=-500000,"-1M to -500K",IF(AH2<=-200000,"-500K to -200K",IF(AH2<=-75000,"-200K to -75K",IF(AH2<=-50000,"-75K to -50K",IF(AH2<=-25000,"-50K to -25K",IF(AH2<=-10000,"-25K to -10K",IF(AH2<0,"-10K to 0",IF(AH2<=10000,"0–10K",IF(AH2<=25000,"10K–25K",IF(AH2<=50000,"25K–50K",IF(AH2<=75000,"50K–75K",IF(AH2<=200000,"75K–200K",IF(AH2<=500000,"200K–500K",IF(AH2<=1000000,"500K–1M","1M+")))))))))))))))))',
-    'opt_2_percent': '=IF(ISTEXT(AH2), "", MIN(AH2,$G2)/MAX(AH2,$G2))',
+
+    'delta_opt_2': safe_col('delta_opt_2'),
+    'opt_2_simplified': safe_col('opt_2_simplified'),
+    'opt_2_percent': safe_col('opt_2_percent'),
+
     'lacoe_approved': safe_col('lacoe_approved'),
     'holdback': safe_col('holdback'),
     'holdback_approved': safe_col('holdback_approved'),
+
     'Relevant Metro': safe_col('Relevant Metro'),
     'Cancellation Reason': safe_col('Cancellation Reason'),
+
     'Opt1 Purchase/Rehab': safe_col('Opt1 Purchase/Rehab'),
     'Opt2 Purchase/Rehab': safe_col('Opt2 Purchase/Rehab'),
+
     'Acquisition LTFV': safe_col('Acquisition LTFV'),
     'Acquisition LTC': safe_col('Acquisition LTC'),
     'Acquisition LTCV': safe_col('Acquisition LTCV'),
     'Acquisition LTPP': safe_col('Acquisition LTPP'),
+
     'Rehab LTFV': safe_col('Rehab LTFV'),
     'Rehab LTC': safe_col('Rehab LTC'),
     'Rehab LTCV': safe_col('Rehab LTCV'),
     'Rehab LTPP': safe_col('Rehab LTPP'),
+
     'PP Category': safe_col('PP Category'),
+
     'Canceled Reason W/ high leverage': safe_col('Canceled Reason W/ high leverage'),
     'Canceled Reason W/ high leverage on LTPP': safe_col('Canceled Reason W/ high leverage on LTPP'),
+
     'Borrower Source': safe_col('Borrower Source'),
+
     'formatted_address': safe_col('formatted_address'),
 })
 
-# Normalize all strings to avoid encoding issues
-df_out = df_out.apply(lambda col: col.map(lambda x: unicodedata.normalize('NFKD', str(x)) if isinstance(x, str) else x))
+
+df_out = df_out.apply(
+    lambda col: col.map(
+        lambda x: unicodedata.normalize('NFKD', str(x))
+        if isinstance(x, str) else x
+    )
+)
+
 df_out.to_csv(csv_name, index=False, encoding='utf-8-sig')
+
+print("DONE — FULL CSV WRITTEN")

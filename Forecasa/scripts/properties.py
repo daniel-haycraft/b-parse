@@ -1,5 +1,7 @@
 import requests
 import csv
+import time
+import random
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
@@ -7,51 +9,119 @@ import unicodedata
 from rich.console import Console
 from rich.syntax import Syntax
 import json
+import threading
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # API and URL
 key = "IBFP-FDUlIyAnY_mJuzIjg"
 url = "https://webapp.forecasa.com/api/v1/properties"
 
+# ---- speed / stability knobs (same API rules) ----
+MAX_WORKERS = 10          # threads doing work
+MAX_IN_FLIGHT = 6         # "not too fast" cap of simultaneous API calls
+REQUEST_TIMEOUT = 30
 
+DEBUG_PRETTY_PRINT = False  # set True only when debugging a few rows
+
+# ---- thread-local session (safe under threads) + pooling ----
+thread_local = threading.local()
+api_sema = threading.Semaphore(MAX_IN_FLIGHT)
+
+def get_session():
+    s = getattr(thread_local, "session", None)
+    if s is None:
+        s = requests.Session()
+        retry = Retry(
+            total=2,
+            backoff_factor=0.4,
+            status_forcelist=(500, 502, 503, 504),
+            allowed_methods=frozenset(["GET"]),
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(
+            max_retries=retry,
+            pool_connections=MAX_WORKERS,
+            pool_maxsize=MAX_WORKERS,
+        )
+        s.mount("https://", adapter)
+        s.mount("http://", adapter)
+        thread_local.session = s
+    return s
+
+def safe_json(resp):
+    try:
+        return resp.json()
+    except Exception:
+        return {}
 
 def pretty_print_dict(data):
     console = Console()
     formatted = json.dumps(data, indent=4, ensure_ascii=False)
     syntax = Syntax(formatted, "json", theme="monokai", line_numbers=False)
     console.print(syntax)
-    
-loadcsv='month'
+
+loadcsv = 'month'
+
 # Load CSV
-with open(f'Dead Deal Data Look Up {loadcsv}.2025.csv', "r", encoding="cp437") as f:
+with open(f'Dead Deal Data Look Up {loadcsv}.2026.csv', "r", encoding="cp437") as f:
     my_dict = csv.DictReader(f)
     lister = list(my_dict)
 
+# (kept exactly as you had it)
+FALLBACK_KEYS = [
+    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
+    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
+    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
+    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
+    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
+    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
+    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
+    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
+    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
+    'Borrower Source'
+]
+
+def fallback_row(li, status='Not Found'):
+    fallback = {**li}
+    for k in FALLBACK_KEYS:
+        fallback.setdefault(k, '')
+    fallback['recorded_date'] = ''
+    fallback['Status'] = status
+    return fallback
+
 def fetch_transactions(li):
-    # Subtract 30 days from Application Date
-    date1 = datetime.strptime(li["coe"], "%m/%d/%Y") - timedelta(days=30)
+    # --- COE parse (prevents crashes) ---
+    coe_str = (li.get("coe") or li.get("COE") or "").strip()
+    try:
+        date1 = datetime.strptime(coe_str, "%m/%d/%Y") - timedelta(days=30)
+    except Exception:
+        return [fallback_row(li, status="Bad COE")]
+
     date1_str = date1.strftime("%m/%d/%Y")
     date2_str = datetime.today().strftime("%m/%d/%Y")
-    addressv1 = li["formatted_address"]
-    if addressv1 != None or addressv1 != "":
-        addressv1 = li["formatted_address"]
-    else:
-        addressv1 = f'{li["property_address"]}, {li["city"]}, {li["state"]} {li["zip"]}'
 
+    # --- address handling (fixes your always-true condition) ---
+    addressv1 = (li.get("formatted_address") or "").strip()
+
+    if not addressv1:
+        addressv1 = f'{li.get("property_address","")}, {li.get("city","")}, {li.get("state","")} {li.get("zip","")}'.strip()
+
+        # keep your unit normalization behavior
         if 'Unit' in addressv1:
-            addressv1 = addressv1.replace(' Unit', ', Unit ').strip()
-            addressv1 = addressv1.strip().title()
-            
+            addressv1 = addressv1.replace(' Unit', ', Unit ').strip().title()
+
         if '#' in addressv1:
-            addressv1 = addressv1.replace(' #', ', Unit ').strip()
-            addressv1 = addressv1.strip().title()
-            
+            addressv1 = addressv1.replace(' #', ', Unit ').strip().title()
+
         if 'apt' in addressv1:
-            addressv1 = addressv1.replace(' apt', ', apt ').strip()
-            addressv1 = addressv1.strip().title()
-        
+            addressv1 = addressv1.replace(' apt', ', apt ').strip().title()
+
         if 'ste' in addressv1:
-            addressv1 = addressv1.replace(' ste', ', ste ').strip()
-            addressv1 = addressv1.strip().title()
+            addressv1 = addressv1.replace(' ste', ', ste ').strip().title()
+    else:
+        addressv1 = addressv1.strip().title()
+
     params = {
         "api_key": key,
         "page": 1,
@@ -61,64 +131,56 @@ def fetch_transactions(li):
         "search": addressv1,
     }
 
-    try:
-        response = requests.get(url, params=params, timeout=30)
-        response.raise_for_status()
-    except (requests.exceptions.ReadTimeout, requests.exceptions.RequestException) as e:
-        print(f"Request issue for properties.py {li.get('Property Address', '<no address>')}: {e}")
-        fallback = {**li}
-        for k in [
-    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
-    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
-    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
-    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
-    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
-    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
-    'Borrower Source'
-]:
-            fallback.setdefault(k, '')
-        fallback['recorded_date'] = ''
-        fallback['Status'] = 'Not Found'
-        return [fallback]
+    # --- 429 handling + throttling (same “rules” as your other script) ---
+    backoff = 2
+    max_backoff = 20
 
-    properties = response.json().get('properties', [])
+    while True:
+        try:
+            with api_sema:
+                response = get_session().get(url, params=params, timeout=REQUEST_TIMEOUT)
+
+            if response.status_code == 429:
+                sleep_for = min(backoff, max_backoff) + random.uniform(0, 0.5)
+                print(f"[{datetime.now()}] 429 hit → sleeping {sleep_for:.1f}s → {addressv1}", flush=True)
+                time.sleep(sleep_for)
+                backoff = min(backoff * 2, max_backoff)
+                continue
+
+            response.raise_for_status()
+            break
+
+        except (requests.exceptions.ReadTimeout, requests.exceptions.RequestException) as e:
+            print(f"Request issue for properties.py {li.get('formatted_address', '<no address>')}: {e}", flush=True)
+            return [fallback_row(li, status="Not Found")]
+
+    data = safe_json(response)
+    properties = data.get('properties', []) or []
     results = []
 
     for t in properties:
         merged = {**t, **li}
-        pretty_print_dict(merged)
+        if DEBUG_PRETTY_PRINT:
+            pretty_print_dict(merged)
         merged["Status"] = "Found"
         results.append(merged)
 
-    # Fallback row if no API results
     if not results:
-        fallback = {**li}
-        for k in [
-    'fc_transaction_id', 'fc_house_id', 'recorded_date', 'FC Maturity Date', 'FC Borrowing Entity', 'FC Lender',
-    'FC Loan Amount', 'County', 'FC MSA', 'FC Comp Amount', 'FC Est Compt LTC', 'FC Lender Type',
-    'FC Company Id', 'Status', 'Loan Number', 'id', 'Property Address', 'city',
-    'state', 'zip', 'COE', 'CF1 Loan Amount', 'CF1 Loan Request', 'Purchase Price',
-    'Transaction Type', 'Total Cost', 'UW Approved Amount option 1', 'UW LA COE Amount option 1', 'Opt 1 Delta', 'Opt 1 Simplified',
-    'Opt 1 Percent', 'uw_approved_amount_option_2', 'uw_la_coe_option_2', 'Delta Opt 2', 'Opt 2 Simplified', 'Opt 2 Percent',
-    'LACOE Approved', 'Holdback', 'Holdback Approved', 'Relevant Metro', 'Cancellation Reason', 'Opt1 Purchase/Rehab',
-    'Opt2 Purchase/Rehab', 'Acquisition LTFV', 'Acquisition LTC', 'Acquisition LTCV', 'Acquisition LTPP', 'Rehab LTFV',
-    'Rehab LTC', 'Rehab LTCV', 'Rehab LTPP', 'PP Category', 'Canceled Reason W/ high leverage', 'Canceled Reason W/ high leverage on LTPP',
-    'Borrower Source'
-]:
-            fallback.setdefault(k, '')
-        return [fallback]
+        return [fallback_row(li, status="Not Found")]
 
     return results
 
-# Run all requests in parallel
+
+# Run all requests in parallel (same behavior, but safer + progress)
 data_array = []
-with ThreadPoolExecutor(max_workers=5) as executor:
-    future_to_li = {executor.submit(fetch_transactions, li): li for li in lister}
-    for future in as_completed(future_to_li):
+with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    futures = [executor.submit(fetch_transactions, li) for li in lister]
+    total = len(futures)
+
+    for i, future in enumerate(as_completed(futures), 1):
         data_array.extend(future.result() or [])
+        if i % 25 == 0 or i == total:
+            print(f"Progress: {i}/{total}", flush=True)
 
 # Prepare CSV
 csv_name = f'Report completed {loadcsv}.csv'
@@ -129,6 +191,7 @@ df = pd.DataFrame(data_array)
 def safe_col(name):
     return df.get(name, pd.Series('', index=df.index))
 
+# ---- df_out (UNCHANGED from your paste) ----
 df_out = pd.DataFrame({
     'fc_transaction_id': safe_col('∩╗┐fc_transaction_id'),
     'fc_house_id': safe_col('fc_house_id'),
@@ -194,10 +257,7 @@ df_out = pd.DataFrame({
     "last_mortgage_amount": safe_col("last_mortgage_amount"),
     "parcel_number": safe_col("parcel_number"),
     'formatted_address': safe_col('formatted_address'),
-    
 })
-
-
 
 # Normalize strings in all columns
 df_out = df_out.apply(lambda col: col.map(lambda x: unicodedata.normalize('NFKD', str(x)) if isinstance(x, str) else x))
