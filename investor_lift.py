@@ -1,7 +1,14 @@
 
 import requests
 import time
-PRIVATE_APP_TOKEN = "pat-na1-6f6fe850-0217-4155-833c-ee421f749fff"
+import requests
+from dotenv import load_dotenv
+import os
+# Load environment variables from .env file
+load_dotenv()
+
+# Access the secret key
+secret_key = os.getenv("SECRET_KEY")
 
 portal_id = "6624066"
 form_guid ="ab791219-4b31-4711-ac54-18b876f55b4b"
@@ -10,7 +17,7 @@ url = f"https://api.hsforms.com/submissions/v3/integration/secure/submit/{portal
 
 headers = {
     "Content-Type": "application/json",
-    "Authorization": f"Bearer {PRIVATE_APP_TOKEN}"
+    "Authorization": f"Bearer {secret_key}"
 }
 payload = {
     "submittedAt": str(int(time.time() * 1000)),

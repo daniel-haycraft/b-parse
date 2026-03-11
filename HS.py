@@ -1,6 +1,13 @@
 import requests
+from dotenv import load_dotenv
+import os
+# Load environment variables from .env file
+load_dotenv()
 
-PRIVATE_APP_TOKEN = "pat-na1-ff737c80-8682-455c-a55e-aba7fb175741"
+# Access the secret key
+secret_key = os.getenv("SECRET_KEY")
+
+PRIVATE_APP_TOKEN = secret_key
 OWNER_ID = "39964875"   # <- the user ID you want to look up
 
 url = f"https://api.hubapi.com/crm/v3/owners/{OWNER_ID}"
