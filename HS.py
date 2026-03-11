@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 # Access the secret key
-secret_key = os.getenv("SECRET_KEY")
+secret_key = os.getenv("HS_SECRET_KEY")
 
 PRIVATE_APP_TOKEN = secret_key
 OWNER_ID = "39964875"   # <- the user ID you want to look up

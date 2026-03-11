@@ -9,9 +9,8 @@ load_dotenv()
 
 # Access the secret key
 secret_key = os.getenv("SECRET_KEY")
-portal_id=os.getenv("PORTAL_ID")
-form_guid=os.getenv("FORM_GUID")
-
+portal_id = os.getenv("PORTAL_ID")
+form_guid = os.getenv("FORM_GUID")
 url = f"https://api.hsforms.com/submissions/v3/integration/secure/submit/{portal_id}/{form_guid}"
 
 headers = {
