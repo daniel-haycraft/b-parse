@@ -1,6 +1,6 @@
 batmath.py
 *.csv
 *.csv
-.env
+*.env
 hocus.py
 OAuth.txt
