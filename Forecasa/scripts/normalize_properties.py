@@ -21,7 +21,7 @@ data_array = []
 
 def fetch_transactions(li):
 
-    addressv1 = f'{li["property_address"]}, {li["city"]}, {li["state"]} {li["zip"]}'
+    addressv1 =li["property_address"]
 
     if 'Unit' in addressv1:
         addressv1 = addressv1.replace(' Unit', ', Unit ').strip()

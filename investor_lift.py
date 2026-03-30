@@ -34,7 +34,7 @@ payload = {
         {
             #required field
             "name": "email",
-            "value": "dhcopy1@gmail.com"
+            "value": "danielhaycraft@gmail.com"
         },
         {
             #required field
@@ -44,7 +44,7 @@ payload = {
         {
             #required field
             "name": "property_state",
-            "value": "Califni"
+            "value": "California"
         },
         {
             "name": "additional_notes",
@@ -52,7 +52,7 @@ payload = {
         },
     ],
     "context": {
-        "pageUri": "https://3xz5u.share.hsforms.com/2ATPVMkeHSSqm_IquqiAdwA",
+        "pageUri": "https://share.hsforms.com/1q3kSGUsxRxGsVBi4dvVbSw3xz5u?utm_campaign=39231273-Investorlift&utm_source=Investor_Lift&utm_medium=IL_form&utm_term=IL&utm_content=IL_conversion",
         "pageName": "Investor lift"
     }
 }

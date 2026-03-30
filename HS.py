@@ -1,25 +1,11 @@
 import requests
-from dotenv import load_dotenv
-import os
-# Load environment variables from .env file
-load_dotenv()
 
-# Access the secret key
-secret_key = os.getenv("HS_SECRET_KEY")
-
-PRIVATE_APP_TOKEN = secret_key
-OWNER_ID = "39964875"   # <- the user ID you want to look up
-
-url = f"https://api.hubapi.com/crm/v3/owners/{OWNER_ID}"
-
-headers = {
-    "Authorization": f"Bearer {PRIVATE_APP_TOKEN}",
-    "Content-Type": "application/json"
-}
-
-r = requests.get(url, headers=headers)
-
-data = r.json()
-
-print(data)
-print("Email:", data.get("email"))
+r = requests.get(
+    "https://webapp.forecasa.com/api/v1/transactions",
+    params={
+        "api_key": "IBFP-FDUlIyAnY_mJuzIjg",
+        "q[property_address_cont]": "4747 Nome Street, Dallas, Texas 75216",
+    }
+)
+print(r.status_code)
+print(r.text[:500])
