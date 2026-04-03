@@ -1,0 +1,8 @@
+*.csv
+*.csv
+*.env
+OAuth.txt
+service_account.json
+__pycache__/
+*.pyc
+service_account.json
